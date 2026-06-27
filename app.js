@@ -1,9 +1,10 @@
 'use strict';
 
 const STORAGE_KEY = 'copomCivilFolgaConfig:v1';
+const THEME_KEY = 'copomCivilTheme:v1';
 const CYCLE_DAYS = 12;
 const SINGLE_OFFSETS = new Set([0]);
-const DOUBLE_OFFSETS = new Set([5, 6]);
+const DOUBLE_OFFSETS = new Set([6, 7]);
 
 const monthNames = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
 const fullDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -40,6 +41,8 @@ const elements = {
   statusText: document.querySelector('#statusText'),
   statusOrb: document.querySelector('#statusOrb'),
   installButton: document.querySelector('#installButton'),
+  themeButton: document.querySelector('#themeButton'),
+  themeColorMeta: document.querySelector('#themeColorMeta'),
   iosInstallDialog: document.querySelector('#iosInstallDialog'),
   toast: document.querySelector('#toast')
 };
@@ -50,7 +53,9 @@ let selectedDate = anchorDate || today;
 let visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
 let deferredInstallPrompt = null;
 let toastTimer = null;
+let installVisibilityTimer = null;
 let touchStartX = null;
+let activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
@@ -90,6 +95,35 @@ function sameDate(a, b) {
 
 function titleCase(text) {
   return text ? text.charAt(0).toLocaleUpperCase('pt-BR') + text.slice(1) : text;
+}
+
+function applyTheme(theme, persist = false) {
+  activeTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = activeTheme;
+  document.documentElement.style.colorScheme = activeTheme;
+
+  if (elements.themeButton) {
+    const isLight = activeTheme === 'light';
+    elements.themeButton.setAttribute('aria-label', isLight ? 'Ativar modo noturno' : 'Ativar modo dia');
+    elements.themeButton.setAttribute('title', isLight ? 'Modo noturno' : 'Modo dia');
+    elements.themeButton.setAttribute('aria-pressed', String(isLight));
+  }
+
+  if (elements.themeColorMeta) {
+    elements.themeColorMeta.setAttribute('content', activeTheme === 'light' ? '#eef6fb' : '#07111f');
+  }
+
+  if (persist) {
+    try {
+      localStorage.setItem(THEME_KEY, activeTheme);
+    } catch {
+      // O tema continua ativo nesta sessão mesmo sem acesso ao armazenamento.
+    }
+  }
+}
+
+function toggleTheme() {
+  applyTheme(activeTheme === 'light' ? 'dark' : 'light', true);
 }
 
 function loadAnchorDate() {
@@ -410,14 +444,20 @@ function setupInstallFlow() {
     return;
   }
 
+  elements.installButton.classList.remove('hidden');
+  clearTimeout(installVisibilityTimer);
+  installVisibilityTimer = setTimeout(() => {
+    elements.installButton.classList.add('hidden');
+  }, 10000);
+
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    elements.installButton.classList.remove('hidden');
   });
 
   window.addEventListener('appinstalled', () => {
     deferredInstallPrompt = null;
+    clearTimeout(installVisibilityTimer);
     elements.installButton.classList.add('hidden');
     showToast('Aplicativo instalado.');
   });
@@ -488,6 +528,7 @@ elements.monthViewport.addEventListener('touchend', (event) => {
 }, { passive: true });
 elements.resetButton.addEventListener('click', () => elements.resetDialog.showModal());
 elements.confirmReset.addEventListener('click', resetScale);
+elements.themeButton.addEventListener('click', toggleTheme);
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
@@ -500,6 +541,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+applyTheme(activeTheme);
 setupInstallFlow();
 registerServiceWorker();
 renderAppState();

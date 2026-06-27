@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
-  <meta name="color-scheme" content="dark">
+  <meta id="themeColorMeta" name="theme-color" content="#07111f">
+  <meta name="color-scheme" content="dark light">
   <meta name="description" content="Controle de folgas do COPOM Civil, com calendário, feriados e funcionamento offline.">
 
   <link rel="manifest" href="manifest.webmanifest">
@@ -16,6 +16,13 @@
   <meta name="apple-mobile-web-app-title" content="Folgas COPOM">
 
   <title>Controle de Folgas — COPOM Civil</title>
+  <script>
+    try {
+      if (localStorage.getItem('copomCivilTheme:v1') === 'light') {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch {}
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -35,9 +42,22 @@
         </div>
       </div>
 
-      <button id="installButton" class="icon-button install-button" type="button" aria-label="Instalar aplicativo" title="Instalar aplicativo">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
-      </button>
+      <div class="topbar-actions">
+        <button id="installButton" class="icon-button install-button" type="button" aria-label="Instalar aplicativo" title="Instalar aplicativo">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
+          <span>Instalar</span>
+        </button>
+
+        <button id="themeButton" class="icon-button theme-button" type="button" aria-label="Ativar modo dia" title="Modo dia" aria-pressed="false">
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.5 8.5 0 1 0 20.2 15.2Z"></path>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <main>
