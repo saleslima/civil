@@ -44,6 +44,15 @@
         <div class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32" role="img"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
         </div>
+        <div class="user-counter" aria-label="Usuários neste aparelho">
+          <svg viewBox="0 0 32 24" aria-hidden="true">
+            <circle cx="16" cy="6" r="4"></circle>
+            <circle cx="7" cy="8" r="3"></circle>
+            <circle cx="25" cy="8" r="3"></circle>
+            <path d="M9 22c.4-6 3-9 7-9s6.6 3 7 9M1.5 22c.3-4.4 2.2-6.8 5.5-6.8 1.5 0 2.7.5 3.6 1.4M30.5 22c-.3-4.4-2.2-6.8-5.5-6.8-1.5 0-2.7.5-3.6 1.4"></path>
+          </svg>
+          <strong id="userCount">1</strong>
+        </div>
         <div>
           <p class="eyebrow">COPOM CIVIL</p>
           <h1>CivilOff</h1>
@@ -65,6 +74,10 @@
             <path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.5 8.5 0 1 0 20.2 15.2Z"></path>
           </svg>
         </button>
+        <div class="operation-switch" role="group" aria-label="Modo operacional">
+          <button id="mode190Button" class="operation-button active" type="button" aria-pressed="true">190</button>
+          <button id="mode193Button" class="operation-button emergency" type="button" aria-pressed="false">193</button>
+        </div>
         <button id="neonButton" class="icon-button neon-button" type="button" aria-label="Escolher cor neon" title="Escolher cor neon" hidden>
           <span class="neon-swatch" aria-hidden="true"></span>
         </button>
@@ -72,9 +85,13 @@
       </div>
     </header>
 
+
     <main>
       <section class="status-card glass-card" aria-labelledby="statusTitle">
-        <div>
+        <div class="status-content">
+          <div class="thought-marquee" aria-label="Pensamento do dia">
+            <span id="dailyThought">Pensamento do dia</span>
+          </div>
           <p class="section-label">ESCALA ATIVA</p>
           <h2 id="statusTitle">Nenhuma data definida</h2>
           <p id="statusText" class="status-text">Defina a primeira folga unitária para gerar a escala.</p>
@@ -128,6 +145,11 @@
 
         <p class="swipe-hint">Deslize para os lados ou use as setas para mudar o mês.</p>
         <button id="todayButton" class="text-button" type="button">Ir para hoje</button>
+        <div id="waterResponse" class="water-response" aria-hidden="true">
+          <span class="hose-nozzle"></span>
+          <span class="water-jet"></span>
+          <span class="water-mist"></span>
+        </div>
       </section>
 
       <section id="selectedCard" class="selected-card glass-card" aria-live="polite" hidden>

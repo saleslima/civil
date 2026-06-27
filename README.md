@@ -1,24 +1,22 @@
-# CivilOff — COPOM Civil
+# CivilOff PWA
 
-PWA responsivo para Android e iOS.
+PWA móvel para controle de folgas do COPOM Civil.
 
-## Funcionamento
+## Recursos
 
-1. Toque em **Definir folga unitária**.
-2. Escolha a data no calendário aberto pelo sistema.
-3. A escala é salva automaticamente no `localStorage` do navegador.
-4. O calendário mensal passa a exibir as folgas em verde.
-5. Use as setas ou deslize o calendário para navegar entre os meses.
-6. Use o botão de sol/lua para alternar entre modo noturno e modo dia.
-7. A configuração só é apagada ao tocar em **RESET** e confirmar.
+- Ciclo de folgas salvo no `localStorage`.
+- Calendário mensal com meses anteriores e posteriores.
+- Modos dia e noturno.
+- Cor neon configurável após a definição da data-base.
+- Modo 190 como padrão.
+- Modo 193 com tema vermelho/amarelo, fogo por 5 segundos e extinção por água.
+- 365 reflexões diárias inspiradas em pensadores, exibidas em faixa animada.
+- Contador local acompanhado por ícone de três usuários.
+- Funcionamento offline após o primeiro carregamento.
+- Instalação como PWA em Android e iOS.
 
-## Regra da escala
+## Publicação
 
-- A data escolhida é a folga unitária.
-- O 6º e o 7º dias seguintes são folgas duplas.
-- No 5º dia após a segunda folga ocorre uma nova folga unitária.
-- O ciclo se repete automaticamente.
+Publique todos os arquivos desta pasta em uma hospedagem HTTPS, mantendo a estrutura original.
 
-## Instalação
-
-Ao abrir a página fora do modo instalado, o botão **Instalar** fica visível durante os primeiros 10 segundos. Publique todos os arquivos em uma hospedagem HTTPS. Em Android, use a opção de instalar aplicativo do navegador. Em iPhone/iPad, abra no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.
+> O contador de usuários desta versão é local ao aparelho. Uma contagem global exige banco de dados ou API no servidor.

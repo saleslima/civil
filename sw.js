@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'civiloff-v3.8.0';
+const CACHE_NAME = 'civiloff-v4.6.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const APP_SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './flame.gif'
 ];
 
 self.addEventListener('install', (event) => {

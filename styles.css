@@ -1686,3 +1686,547 @@ html[data-theme="light"] .glass-card {
   box-shadow: var(--shadow), 0 0 20px rgba(var(--neon-rgb), .07), inset 0 1px 0 rgba(255, 255, 255, .9);
 }
 
+
+/* CivilOff v4 — modos 190/193, pensamento diário e contador local */
+.user-counter {
+  display: grid;
+  grid-template-columns: 28px auto;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 48px;
+  height: 42px;
+  padding: 0 7px 0 5px;
+  border: 1px solid rgba(255, 213, 31, .28);
+  border-radius: 14px;
+  color: var(--yellow);
+  background: rgba(255, 213, 31, .055);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 16px rgba(255,213,31,.06);
+}
+
+.user-counter svg {
+  width: 28px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(255, 213, 31, .4));
+}
+
+.user-counter strong {
+  min-width: 10px;
+  font-size: .78rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.operation-switch {
+  display: grid;
+  grid-template-columns: repeat(2, 38px);
+  flex: 0 0 auto;
+  gap: 4px;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(3, 12, 22, .6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.operation-button {
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
+  font-size: .67rem;
+  font-weight: 950;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.operation-button.active {
+  border-color: rgba(var(--neon-rgb), .62);
+  color: var(--neon);
+  background: rgba(var(--neon-rgb), .1);
+  box-shadow: inset 0 0 14px rgba(var(--neon-rgb), .08), 0 0 16px rgba(var(--neon-rgb), .18);
+}
+
+.operation-button.emergency {
+  color: #ffb39d;
+}
+
+html[data-operation-mode="193"] .operation-button.emergency.active {
+  border-color: rgba(255, 213, 31, .78);
+  color: #ffd51f;
+  background: linear-gradient(135deg, rgba(255, 36, 20, .24), rgba(255, 213, 31, .12));
+  box-shadow: inset 0 0 16px rgba(255, 45, 20, .14), 0 0 20px rgba(255, 45, 20, .25), 0 0 12px rgba(255, 213, 31, .14);
+}
+
+.status-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.thought-marquee {
+  position: relative;
+  width: 100%;
+  max-width: 470px;
+  margin: 0 0 10px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(var(--neon-rgb), .14);
+  color: var(--neon);
+  font-size: 1rem;
+  font-weight: 720;
+  line-height: 1.5;
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.thought-marquee span {
+  display: inline-block;
+  min-width: max-content;
+  padding-left: 100%;
+  animation: daily-thought-scroll 22s linear infinite;
+}
+
+@keyframes daily-thought-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+.neon-button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+  filter: grayscale(.7);
+}
+
+/* Tema operacional 193 */
+html[data-operation-mode="193"] {
+  --cyan: #ffd51f;
+  --cyan-soft: rgba(255, 213, 31, .18);
+  --line: rgba(255, 105, 48, .24);
+  --line-strong: rgba(255, 213, 31, .55);
+  --red: #ff2a18;
+}
+
+html[data-operation-mode="193"] body,
+html[data-operation-mode="193"][data-theme="light"] body {
+  background:
+    radial-gradient(circle at 84% -8%, rgba(255, 213, 31, .2), transparent 34%),
+    radial-gradient(circle at -12% 44%, rgba(255, 35, 15, .22), transparent 38%),
+    linear-gradient(180deg, #1a0804 0%, #090403 48%, #030101 100%);
+}
+
+html[data-operation-mode="193"] .ambient-one { background: #ffd51f; }
+html[data-operation-mode="193"] .ambient-two { background: #ff2a18; }
+
+html[data-operation-mode="193"] .glass-card,
+html[data-operation-mode="193"][data-theme="light"] .glass-card {
+  border-color: rgba(255, 88, 35, .28);
+  color: #fff8ee;
+  background: linear-gradient(145deg, rgba(52, 13, 8, .92), rgba(18, 7, 4, .88));
+  box-shadow: 0 18px 55px rgba(0,0,0,.42), 0 0 24px rgba(255, 48, 22, .1), inset 0 1px 0 rgba(255,213,31,.08);
+}
+
+html[data-operation-mode="193"] .glass-card::before {
+  background: linear-gradient(90deg, #ff2a18, #ffd51f, transparent);
+}
+
+html[data-operation-mode="193"] .section-label,
+html[data-operation-mode="193"] .eyebrow,
+html[data-operation-mode="193"] .text-button,
+html[data-operation-mode="193"] .date-field span {
+  color: #ffd51f;
+}
+
+html[data-operation-mode="193"] .calendar-day:not(.single-off):not(.double-off) {
+  border-color: rgba(255, 77, 31, .42);
+  background: rgba(255, 47, 24, .035);
+  box-shadow: inset 0 0 10px rgba(255, 47, 24, .035), 0 0 10px rgba(255, 47, 24, .12);
+}
+
+html[data-operation-mode="193"] .calendar-day.single-off {
+  border-color: rgba(255, 213, 31, .86);
+  color: #301000;
+  background: linear-gradient(145deg, #ffe45a, #ff9d16);
+  box-shadow: 0 0 18px rgba(255, 213, 31, .22);
+}
+
+html[data-operation-mode="193"] .calendar-day.double-off {
+  border-color: rgba(255, 68, 28, .9);
+  color: #fff7dd;
+  background: linear-gradient(145deg, #ffb018, #e72a12);
+  box-shadow: 0 0 18px rgba(255, 54, 24, .24);
+}
+
+html[data-operation-mode="193"] .selected-card,
+html[data-operation-mode="193"] .next-days-panel {
+  color: #fff8ee;
+}
+
+/* Fogo nos dias de folga */
+.fire-layer {
+  position: absolute;
+  z-index: 8;
+  inset: 2px;
+  display: none;
+  overflow: hidden;
+  border-radius: 10px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(255, 55, 0, .34), transparent 64%),
+    linear-gradient(180deg, transparent 8%, rgba(255, 109, 25, .08) 56%, rgba(112, 14, 0, .18) 100%);
+}
+
+.fire-layer i {
+  position: absolute;
+  bottom: -16%;
+  width: 31%;
+  height: 112%;
+  border-radius: 56% 44% 34% 66% / 82% 82% 18% 18%;
+  background:
+    radial-gradient(circle at 50% 78%, rgba(255, 248, 209, .98) 0 8%, rgba(255, 217, 92, .98) 9% 20%, rgba(255, 149, 24, .98) 21% 48%, rgba(255, 84, 15, .95) 49% 66%, rgba(176, 14, 0, .92) 67% 83%, transparent 84%);
+  filter: drop-shadow(0 0 8px rgba(255, 145, 34, .95)) drop-shadow(0 0 16px rgba(255, 63, 9, .82));
+  transform-origin: 50% 100%;
+  animation: flame-flicker .28s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+
+.fire-layer i:nth-child(1) { left: -6%; height: 82%; animation-delay: -.06s; }
+.fire-layer i:nth-child(2) { left: 8%; height: 106%; animation-delay: -.19s; }
+.fire-layer i:nth-child(3) { left: 32%; height: 124%; animation-delay: -.11s; }
+.fire-layer i:nth-child(4) { right: 16%; height: 103%; animation-delay: -.24s; }
+.fire-layer i:nth-child(5) { right: -8%; height: 88%; animation-delay: -.16s; }
+
+.fire-layer b {
+  position: absolute;
+  inset: auto 4% 1% 4%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 232, 123, .55), rgba(255, 86, 22, .6) 42%, rgba(115, 11, 0, .15) 78%, transparent 100%);
+  filter: blur(6px);
+  box-shadow: 0 0 18px rgba(255, 61, 0, .95), 0 0 34px rgba(255, 186, 52, .85);
+}
+
+.fire-layer em {
+  position: absolute;
+  inset: 18% 8% auto;
+  height: 26%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255, 209, 70, .85) 0 3px, transparent 4px),
+    radial-gradient(circle at 48% 24%, rgba(255, 144, 22, .72) 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 54%, rgba(255, 240, 178, .82) 0 2px, transparent 3px);
+  filter: blur(.5px) drop-shadow(0 0 6px rgba(255, 167, 33, .78));
+  animation: ember-rise 1.2s linear infinite;
+}
+
+@keyframes flame-flicker {
+  0% { transform: rotate(-6deg) scale(.88, 1.1) translateY(2px); opacity: .84; }
+  35% { transform: rotate(2deg) scale(1, .96) translateY(-1px); opacity: .97; }
+  100% { transform: rotate(7deg) scale(1.12, .9) translateY(-4px); opacity: 1; }
+}
+
+@keyframes ember-rise {
+  0% { opacity: .2; transform: translateY(8px) scale(.92); }
+  35% { opacity: .9; }
+  100% { opacity: 0; transform: translateY(-14px) scale(1.08); }
+}
+
+.smoke-layer {
+  position: absolute;
+  z-index: 9;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.smoke-layer i {
+  position: absolute;
+  bottom: 4%;
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, rgba(245,245,245,.72), rgba(154,154,154,.52) 45%, rgba(86,86,86,.28) 68%, transparent 76%);
+  filter: blur(3px);
+  opacity: 0;
+}
+
+.smoke-layer i:nth-child(1) { left: -4%; animation: smoke-rise 1.8s ease-out forwards; }
+.smoke-layer i:nth-child(2) { left: 20%; width: 52%; height: 52%; animation: smoke-rise 1.9s .12s ease-out forwards; }
+.smoke-layer i:nth-child(3) { right: 12%; width: 42%; height: 42%; animation: smoke-rise 1.7s .08s ease-out forwards; }
+.smoke-layer i:nth-child(4) { right: -5%; width: 50%; height: 50%; animation: smoke-rise 2s .16s ease-out forwards; }
+
+@keyframes smoke-rise {
+  0% { opacity: 0; transform: translateY(10px) scale(.5); }
+  18% { opacity: .72; }
+  58% { opacity: .54; transform: translateY(-10px) scale(.92); }
+  100% { opacity: 0; transform: translateY(-24px) scale(1.24); }
+}
+
+html[data-operation-mode="193"].fire-phase .calendar-day.single-off .fire-layer,
+html[data-operation-mode="193"].fire-phase .calendar-day.double-off .fire-layer,
+html[data-operation-mode="193"].water-phase .calendar-day.single-off .fire-layer,
+html[data-operation-mode="193"].water-phase .calendar-day.double-off .fire-layer {
+  display: block;
+}
+
+html[data-operation-mode="193"].smoke-phase .calendar-day.single-off .smoke-layer,
+html[data-operation-mode="193"].smoke-phase .calendar-day.double-off .smoke-layer {
+  display: block;
+}
+
+html[data-operation-mode="193"].fire-phase .calendar-day.single-off > strong,
+html[data-operation-mode="193"].fire-phase .calendar-day.double-off > strong,
+html[data-operation-mode="193"].fire-phase .calendar-day.single-off > small,
+html[data-operation-mode="193"].fire-phase .calendar-day.double-off > small,
+html[data-operation-mode="193"].fire-phase .calendar-day .electron-orbit,
+html[data-operation-mode="193"].smoke-phase .calendar-day.single-off > strong,
+html[data-operation-mode="193"].smoke-phase .calendar-day.double-off > strong,
+html[data-operation-mode="193"].smoke-phase .calendar-day.single-off > small,
+html[data-operation-mode="193"].smoke-phase .calendar-day.double-off > small,
+html[data-operation-mode="193"].smoke-phase .calendar-day .electron-orbit {
+  opacity: 0;
+}
+
+html[data-operation-mode="193"].water-phase .fire-layer {
+  animation: extinguish-fire 1.95s ease-out forwards;
+}
+
+html[data-operation-mode="193"].water-phase .calendar-day.single-off > strong,
+html[data-operation-mode="193"].water-phase .calendar-day.double-off > strong,
+html[data-operation-mode="193"].water-phase .calendar-day.single-off > small,
+html[data-operation-mode="193"].water-phase .calendar-day.double-off > small,
+html[data-operation-mode="193"].water-phase .calendar-day .electron-orbit {
+  opacity: 0;
+}
+
+html[data-operation-mode="193"].emergency-revealed .calendar-day.single-off > strong,
+html[data-operation-mode="193"].emergency-revealed .calendar-day.double-off > strong,
+html[data-operation-mode="193"].emergency-revealed .calendar-day.single-off > small,
+html[data-operation-mode="193"].emergency-revealed .calendar-day.double-off > small,
+html[data-operation-mode="193"].emergency-revealed .calendar-day .electron-orbit {
+  animation: reveal-day-crisp .44s ease-out both;
+}
+
+@keyframes extinguish-fire {
+  0% { opacity: 1; transform: scale(1); filter: saturate(1) brightness(1); }
+  42% { opacity: .92; transform: scale(.96) translateY(1px); filter: saturate(.85) brightness(.95); }
+  72% { opacity: .38; transform: scale(.68) translateY(10px); filter: saturate(.35) blur(1.8px); }
+  100% { opacity: 0; transform: scale(.28) translateY(24px); filter: saturate(0) blur(5px); }
+}
+
+@keyframes reveal-day-crisp {
+  0% { opacity: 0; filter: blur(3px); transform: scale(.96); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+
+/* Mangueira e jato d'água */
+.water-response {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+html[data-operation-mode="193"].water-phase .water-response {
+  display: block;
+}
+
+.hose-nozzle {
+  position: absolute;
+  top: 18%;
+  right: -16px;
+  width: 62px;
+  height: 30px;
+  border: 4px solid #272d31;
+  border-radius: 9px 2px 2px 9px;
+  background: linear-gradient(180deg, #6d777e, #1b2125 56%, #050708 57%);
+  box-shadow: 0 0 0 3px #090b0d, 0 0 12px rgba(0,0,0,.7);
+  transform: rotate(18deg);
+  animation: hose-kick .28s ease-in-out infinite alternate;
+}
+
+.hose-nozzle::after {
+  position: absolute;
+  left: -15px;
+  top: 5px;
+  width: 20px;
+  height: 13px;
+  border-radius: 7px;
+  background: #161b1e;
+  content: "";
+}
+
+.water-jet {
+  position: absolute;
+  top: 21%;
+  right: 26px;
+  width: 128%;
+  height: 28px;
+  border-radius: 60% 10% 10% 60%;
+  opacity: 0;
+  background:
+    linear-gradient(180deg, rgba(236,252,255,.92), rgba(89,210,255,.84) 42%, rgba(22,125,255,.52) 74%, transparent);
+  filter: drop-shadow(0 0 7px rgba(83,210,255,.8)) blur(.35px);
+  transform: rotate(18deg) scaleX(.05);
+  transform-origin: right center;
+  animation: water-blast 1.9s ease-out forwards;
+}
+
+.water-mist {
+  position: absolute;
+  inset: 8% 2% 10%;
+  opacity: 0;
+  background-image:
+    radial-gradient(circle, rgba(220,250,255,.95) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(79,198,255,.75) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255,255,255,.9) 0 1px, transparent 2px);
+  background-size: 31px 27px, 43px 36px, 21px 39px;
+  animation: water-mist-move 1.9s ease-out forwards;
+}
+
+@keyframes hose-kick {
+  from { transform: rotate(16deg) translateX(0); }
+  to { transform: rotate(20deg) translateX(-3px); }
+}
+
+@keyframes water-blast {
+  0% { opacity: 0; transform: rotate(18deg) scaleX(.03); }
+  14% { opacity: .96; transform: rotate(18deg) scaleX(1); }
+  82% { opacity: .9; transform: rotate(14deg) scaleX(1); }
+  100% { opacity: 0; transform: rotate(12deg) scaleX(.88); }
+}
+
+@keyframes water-mist-move {
+  0% { opacity: 0; transform: translate(24%, -8%) scale(.65); }
+  24% { opacity: .75; }
+  82% { opacity: .58; transform: translate(-7%, 8%) scale(1.08); }
+  100% { opacity: 0; transform: translate(-15%, 14%) scale(1.18); }
+}
+
+@media (max-width: 520px) {
+  .topbar { align-items: flex-start; }
+  .brand { gap: 7px; }
+  .user-counter {
+    grid-template-columns: 24px auto;
+    min-width: 42px;
+    height: 38px;
+    padding-inline: 4px 6px;
+    border-radius: 12px;
+  }
+  .user-counter svg { width: 24px; height: 19px; }
+  .brand h1 { font-size: 1.06rem; }
+  .eyebrow { font-size: .56rem; }
+  .topbar-actions { gap: 5px; }
+  .theme-button,
+  .neon-button { width: 39px; height: 39px; }
+  .thought-marquee { max-width: calc(100vw - 132px); }
+}
+
+@media (max-width: 380px) {
+  .brand > div:last-child { display: none; }
+  .thought-marquee { max-width: calc(100vw - 116px); }
+}
+
+html[data-operation-mode="193"] {
+  --bg: #090403;
+  --surface: rgba(50, 13, 8, .88);
+  --surface-strong: rgba(30, 8, 5, .98);
+  --text: #fff8ee;
+  --muted: #cda99c;
+  --yellow: #ffd51f;
+  --yellow-soft: rgba(255, 213, 31, .18);
+  --green: #ffd51f;
+  color-scheme: dark;
+}
+
+html[data-operation-mode="193"] .month-viewport,
+html[data-operation-mode="193"][data-theme="light"] .month-viewport {
+  border-color: rgba(255, 91, 35, .25);
+  background: rgba(20, 5, 3, .62);
+}
+
+html[data-operation-mode="193"] .weekday-row,
+html[data-operation-mode="193"][data-theme="light"] .weekday-row {
+  border-bottom-color: rgba(255, 91, 35, .2);
+  background: rgba(255, 213, 31, .035);
+}
+
+html[data-operation-mode="193"] .next-item,
+html[data-operation-mode="193"] .next-item-date,
+html[data-operation-mode="193"] .month-nav,
+html[data-operation-mode="193"] .date-field input,
+html[data-operation-mode="193"] .dialog-cancel {
+  color: #fff8ee;
+  border-color: rgba(255, 91, 35, .2);
+  background: rgba(255, 77, 31, .055);
+}
+
+
+/* Botões 190/193 ao lado do modo claro/escuro */
+@media (max-width: 520px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+  .topbar-actions {
+    margin-left: auto;
+  }
+  .operation-switch {
+    grid-template-columns: repeat(2, 34px);
+    gap: 3px;
+    padding: 2px;
+    border-radius: 12px;
+  }
+  .operation-button {
+    width: 34px;
+    min-height: 35px;
+    border-radius: 9px;
+    font-size: .61rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* CivilOff v4.3 — chama GIF do usuário */
+.fire-layer {
+  display: none;
+  align-items: stretch;
+  justify-content: stretch;
+  background: none;
+}
+
+.flame-gif {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center center;
+  filter: drop-shadow(0 0 10px rgba(255, 126, 14, .95)) drop-shadow(0 0 18px rgba(255, 52, 0, .72));
+  image-rendering: auto;
+}
+
+html[data-operation-mode="193"].fire-phase .calendar-day.single-off .fire-layer,
+html[data-operation-mode="193"].fire-phase .calendar-day.double-off .fire-layer,
+html[data-operation-mode="193"].water-phase .calendar-day.single-off .fire-layer,
+html[data-operation-mode="193"].water-phase .calendar-day.double-off .fire-layer {
+  display: flex;
+}

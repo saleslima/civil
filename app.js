@@ -4,6 +4,7 @@ const STORAGE_KEY = 'copomCivilFolgaConfig:v1';
 const THEME_KEY = 'copomCivilTheme:v1';
 const NEON_KEY = 'civilOffNeonColor:v1';
 const DEFAULT_NEON = '#4bd5ff';
+const LOCAL_USER_COUNT_KEY = 'civilOffLocalUserCount:v1';
 const CYCLE_DAYS = 12;
 const SINGLE_OFFSETS = new Set([0]);
 const DOUBLE_OFFSETS = new Set([6, 7]);
@@ -43,6 +44,11 @@ const elements = {
   statusText: document.querySelector('#statusText'),
   statusOrb: document.querySelector('#statusOrb'),
   installButton: document.querySelector('#installButton'),
+  userCount: document.querySelector('#userCount'),
+  dailyThought: document.querySelector('#dailyThought'),
+  mode190Button: document.querySelector('#mode190Button'),
+  mode193Button: document.querySelector('#mode193Button'),
+  waterResponse: document.querySelector('#waterResponse'),
   neonButton: document.querySelector('#neonButton'),
   neonColorInput: document.querySelector('#neonColorInput'),
   themeButton: document.querySelector('#themeButton'),
@@ -61,6 +67,8 @@ let installVisibilityTimer = null;
 let touchStartX = null;
 let activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 let activeNeon = loadNeonColor();
+let activeOperationMode = '190';
+let emergencyTimers = [];
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
@@ -120,6 +128,113 @@ function electronMotionFor(date, type) {
   const delayA = -unit(16) * durationA;
   const delayB = -unit(24) * durationB;
   return { durationA, durationB, delayA, delayB };
+}
+
+
+const THINKERS = [
+  'Sócrates', 'Platão', 'Aristóteles', 'Sêneca', 'Marco Aurélio', 'Epicteto', 'Confúcio', 'Lao-Tsé',
+  'Sun Tzu', 'Maquiavel', 'Descartes', 'Spinoza', 'Pascal', 'Voltaire', 'Rousseau', 'Kant',
+  'Hegel', 'Schopenhauer', 'Kierkegaard', 'Nietzsche', 'John Locke', 'David Hume', 'Francis Bacon',
+  'Montesquieu', 'Thomas Hobbes', 'John Stuart Mill', 'Hannah Arendt', 'Simone de Beauvoir',
+  'Simone Weil', 'Albert Camus', 'Jean-Paul Sartre', 'Michel de Montaigne', 'Blaise Pascal',
+  'Heráclito', 'Parmênides', 'Pitágoras', 'Demócrito', 'Epicuro', 'Zenão de Cítio', 'Cícero',
+  'Agostinho de Hipona', 'Tomás de Aquino', 'Averróis', 'Avicena', 'Al-Farabi', 'Ibn Khaldun',
+  'Maimônides', 'Erasmo de Roterdã', 'Thomas More', 'Giordano Bruno', 'Galileu Galilei',
+  'Isaac Newton', 'Charles Darwin', 'Marie Curie', 'Ada Lovelace', 'Alan Turing', 'Bertrand Russell',
+  'Karl Popper', 'Thomas Kuhn', 'Viktor Frankl', 'Carl Jung', 'William James', 'John Dewey',
+  'Paulo Freire', 'Rubem Alves', 'Machado de Assis', 'Fernando Pessoa', 'Clarice Lispector',
+  'Mahatma Gandhi', 'Martin Luther King Jr.', 'Nelson Mandela', 'Malala Yousafzai', 'Ailton Krenak'
+];
+
+const THOUGHT_PATTERNS = [
+  (name) => `A disciplina transforma intenção em caminho — reflexão inspirada em ${name}.`,
+  (name) => `Quem observa com atenção escolhe com mais sabedoria — reflexão inspirada em ${name}.`,
+  (name) => `A coragem começa quando o dever supera o medo — reflexão inspirada em ${name}.`,
+  (name) => `Toda mudança consistente nasce de um pequeno gesto repetido — reflexão inspirada em ${name}.`,
+  (name) => `Conhecer a si mesmo torna mais claro o próximo passo — reflexão inspirada em ${name}.`
+];
+
+const DAILY_THOUGHTS = THINKERS.flatMap((thinker) => THOUGHT_PATTERNS.map((pattern) => pattern(thinker))).slice(0, 365);
+
+function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0, 12);
+  return Math.floor((date - start) / 86400000);
+}
+
+function renderDailyThought() {
+  if (!elements.dailyThought) return;
+  const index = (dayOfYear(today) - 1) % DAILY_THOUGHTS.length;
+  elements.dailyThought.textContent = DAILY_THOUGHTS[index];
+}
+
+function loadLocalUserCount() {
+  try {
+    const saved = Number.parseInt(localStorage.getItem(LOCAL_USER_COUNT_KEY) || '1', 10);
+    const count = Number.isFinite(saved) && saved > 0 ? saved : 1;
+    localStorage.setItem(LOCAL_USER_COUNT_KEY, String(count));
+    return count;
+  } catch {
+    return 1;
+  }
+}
+
+function renderLocalUserCount() {
+  if (!elements.userCount) return;
+  elements.userCount.textContent = String(loadLocalUserCount());
+}
+
+function clearEmergencyTimers() {
+  emergencyTimers.forEach((timer) => clearTimeout(timer));
+  emergencyTimers = [];
+}
+
+function setOperationMode(mode, replay = true) {
+  activeOperationMode = mode === '193' ? '193' : '190';
+  clearEmergencyTimers();
+  document.documentElement.dataset.operationMode = activeOperationMode;
+  document.documentElement.classList.remove('fire-phase', 'water-phase', 'smoke-phase', 'emergency-revealed');
+
+  const is193 = activeOperationMode === '193';
+  elements.mode190Button?.classList.toggle('active', !is193);
+  elements.mode193Button?.classList.toggle('active', is193);
+  elements.mode190Button?.setAttribute('aria-pressed', String(!is193));
+  elements.mode193Button?.setAttribute('aria-pressed', String(is193));
+
+  if (elements.neonButton) elements.neonButton.disabled = is193;
+
+  if (!is193) {
+    applyNeonColor(activeNeon);
+    applyTheme(activeTheme);
+    return;
+  }
+
+  document.documentElement.style.setProperty('--neon', '#ff2a18');
+  document.documentElement.style.setProperty('--neon-rgb', '255, 42, 24');
+  if (elements.themeColorMeta) elements.themeColorMeta.setAttribute('content', '#1a0804');
+
+  if (!replay || !anchorDate) {
+    document.documentElement.classList.add('emergency-revealed');
+    return;
+  }
+
+  document.documentElement.classList.add('fire-phase');
+  elements.mode193Button?.setAttribute('aria-busy', 'true');
+
+  emergencyTimers.push(setTimeout(() => {
+    document.documentElement.classList.remove('fire-phase');
+    document.documentElement.classList.add('water-phase');
+  }, 5000));
+
+  emergencyTimers.push(setTimeout(() => {
+    document.documentElement.classList.remove('water-phase');
+    document.documentElement.classList.add('smoke-phase');
+  }, 7200));
+
+  emergencyTimers.push(setTimeout(() => {
+    document.documentElement.classList.remove('smoke-phase');
+    document.documentElement.classList.add('emergency-revealed');
+    elements.mode193Button?.removeAttribute('aria-busy');
+  }, 9100));
 }
 
 function normalizeNeonColor(value) {
@@ -188,7 +303,10 @@ function applyTheme(theme, persist = false) {
   }
 
   if (elements.themeColorMeta) {
-    elements.themeColorMeta.setAttribute('content', activeTheme === 'light' ? '#eef6fb' : '#07111f');
+    const themeColor = activeOperationMode === '193'
+      ? '#1a0804'
+      : (activeTheme === 'light' ? '#eef6fb' : '#07111f');
+    elements.themeColorMeta.setAttribute('content', themeColor);
   }
 
   if (persist) {
@@ -352,7 +470,17 @@ function renderCalendar(direction = 0) {
       collisionFlash.className = 'electron-collision-flash';
       collisionFlash.setAttribute('aria-hidden', 'true');
 
-      cell.append(orbitA, orbitB, collisionFlash);
+      const fireLayer = document.createElement('span');
+      fireLayer.className = 'fire-layer';
+      fireLayer.setAttribute('aria-hidden', 'true');
+      fireLayer.innerHTML = '<img src="flame.gif" class="flame-gif" alt="">';
+
+      const smokeLayer = document.createElement('span');
+      smokeLayer.className = 'smoke-layer';
+      smokeLayer.setAttribute('aria-hidden', 'true');
+      smokeLayer.innerHTML = '<i></i><i></i><i></i><i></i>';
+
+      cell.append(orbitA, orbitB, collisionFlash, fireLayer, smokeLayer);
 
       const mark = document.createElement('small');
       mark.textContent = type === 'single' ? 'U' : 'D';
@@ -693,6 +821,8 @@ elements.neonColorInput.addEventListener('change', (event) => {
   applyNeonColor(event.target.value, true);
   showToast('Cor neon salva.');
 });
+elements.mode190Button.addEventListener('click', () => setOperationMode('190'));
+elements.mode193Button.addEventListener('click', () => setOperationMode('193', true));
 elements.themeButton.addEventListener('click', toggleTheme);
 
 document.addEventListener('visibilitychange', () => {
@@ -706,8 +836,11 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+renderDailyThought();
+renderLocalUserCount();
 applyNeonColor(activeNeon);
 applyTheme(activeTheme);
+setOperationMode('190', false);
 setupInstallFlow();
 registerServiceWorker();
 renderAppState();
