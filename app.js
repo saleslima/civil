@@ -2,6 +2,8 @@
 
 const STORAGE_KEY = 'copomCivilFolgaConfig:v1';
 const THEME_KEY = 'copomCivilTheme:v1';
+const NEON_KEY = 'civilOffNeonColor:v1';
+const DEFAULT_NEON = '#4bd5ff';
 const CYCLE_DAYS = 12;
 const SINGLE_OFFSETS = new Set([0]);
 const DOUBLE_OFFSETS = new Set([6, 7]);
@@ -41,6 +43,8 @@ const elements = {
   statusText: document.querySelector('#statusText'),
   statusOrb: document.querySelector('#statusOrb'),
   installButton: document.querySelector('#installButton'),
+  neonButton: document.querySelector('#neonButton'),
+  neonColorInput: document.querySelector('#neonColorInput'),
   themeButton: document.querySelector('#themeButton'),
   themeColorMeta: document.querySelector('#themeColorMeta'),
   iosInstallDialog: document.querySelector('#iosInstallDialog'),
@@ -56,6 +60,7 @@ let toastTimer = null;
 let installVisibilityTimer = null;
 let touchStartX = null;
 let activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+let activeNeon = loadNeonColor();
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
@@ -95,6 +100,79 @@ function sameDate(a, b) {
 
 function titleCase(text) {
   return text ? text.charAt(0).toLocaleUpperCase('pt-BR') + text.slice(1) : text;
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function electronMotionFor(date, type) {
+  const seed = hashString(`${toLocalISO(date)}:${type}`);
+  const unit = (offset) => (((seed >> offset) & 255) / 255);
+  const durationA = 3.2 + unit(0) * 1.8;
+  let durationB = 4.3 + unit(8) * 2.3;
+  if (Math.abs(durationB - durationA) < 0.55) durationB += 0.7;
+  const delayA = -unit(16) * durationA;
+  const delayB = -unit(24) * durationB;
+  return { durationA, durationB, delayA, delayB };
+}
+
+function normalizeNeonColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(value || '') ? value.toLowerCase() : DEFAULT_NEON;
+}
+
+function neonRgb(value) {
+  const hex = normalizeNeonColor(value).slice(1);
+  return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
+}
+
+function loadNeonColor() {
+  try {
+    return normalizeNeonColor(localStorage.getItem(NEON_KEY));
+  } catch {
+    return DEFAULT_NEON;
+  }
+}
+
+function applyNeonColor(value, persist = false) {
+  activeNeon = normalizeNeonColor(value);
+  const [red, green, blue] = neonRgb(activeNeon);
+  document.documentElement.style.setProperty('--neon', activeNeon);
+  document.documentElement.style.setProperty('--neon-rgb', `${red}, ${green}, ${blue}`);
+
+  if (elements.neonColorInput) elements.neonColorInput.value = activeNeon;
+  if (elements.neonButton) {
+    elements.neonButton.setAttribute('aria-label', `Escolher cor neon. Cor atual ${activeNeon}`);
+    elements.neonButton.setAttribute('title', `Cor neon atual: ${activeNeon}`);
+  }
+
+  if (persist) {
+    try {
+      localStorage.setItem(NEON_KEY, activeNeon);
+    } catch {
+      // A cor permanece ativa nesta sessão mesmo sem acesso ao armazenamento.
+    }
+  }
+}
+
+function openNeonPicker() {
+  if (!elements.neonColorInput) return;
+  elements.neonColorInput.value = activeNeon;
+
+  try {
+    if (typeof elements.neonColorInput.showPicker === 'function') {
+      elements.neonColorInput.showPicker();
+    } else {
+      elements.neonColorInput.click();
+    }
+  } catch {
+    elements.neonColorInput.click();
+  }
 }
 
 function applyTheme(theme, persist = false) {
@@ -192,8 +270,7 @@ function getHolidays(year) {
 function scheduleTypeFor(date) {
   if (!anchorDate) return null;
   const delta = diffDays(date, anchorDate);
-  if (delta < 0) return null;
-  const position = delta % CYCLE_DAYS;
+  const position = ((delta % CYCLE_DAYS) + CYCLE_DAYS) % CYCLE_DAYS;
   if (SINGLE_OFFSETS.has(position)) return 'single';
   if (DOUBLE_OFFSETS.has(position)) return 'double';
   return 'work';
@@ -253,10 +330,41 @@ function renderCalendar(direction = 0) {
     cell.appendChild(number);
 
     if (type === 'single' || type === 'double') {
+      const motion = electronMotionFor(date, type);
+      cell.style.setProperty('--electron-a-duration', `${motion.durationA.toFixed(2)}s`);
+      cell.style.setProperty('--electron-b-duration', `${motion.durationB.toFixed(2)}s`);
+      cell.style.setProperty('--electron-a-delay', `${motion.delayA.toFixed(2)}s`);
+      cell.style.setProperty('--electron-b-delay', `${motion.delayB.toFixed(2)}s`);
+
+      const orbitA = document.createElement('span');
+      orbitA.className = 'electron-orbit electron-a';
+      orbitA.setAttribute('aria-hidden', 'true');
+      const electronA = document.createElement('i');
+      orbitA.appendChild(electronA);
+
+      const orbitB = document.createElement('span');
+      orbitB.className = 'electron-orbit electron-b';
+      orbitB.setAttribute('aria-hidden', 'true');
+      const electronB = document.createElement('i');
+      orbitB.appendChild(electronB);
+
+      const collisionFlash = document.createElement('span');
+      collisionFlash.className = 'electron-collision-flash';
+      collisionFlash.setAttribute('aria-hidden', 'true');
+
+      cell.append(orbitA, orbitB, collisionFlash);
+
       const mark = document.createElement('small');
       mark.textContent = type === 'single' ? 'U' : 'D';
       mark.setAttribute('aria-hidden', 'true');
       cell.appendChild(mark);
+    }
+
+    if (holiday) {
+      const pin = document.createElement('span');
+      pin.className = 'holiday-pin';
+      pin.setAttribute('aria-hidden', 'true');
+      cell.appendChild(pin);
     }
 
     cell.addEventListener('click', () => selectDate(date));
@@ -307,6 +415,7 @@ function renderAppState() {
   elements.selectedCard.hidden = !hasAnchor;
   elements.nextDaysPanel.hidden = !hasAnchor;
   elements.resetButton.hidden = !hasAnchor;
+  if (elements.neonButton) elements.neonButton.hidden = !hasAnchor;
   elements.statusOrb.classList.toggle('active', hasAnchor);
 
   if (!hasAnchor) {
@@ -316,8 +425,8 @@ function renderAppState() {
     return;
   }
 
-  elements.statusTitle.textContent = `Base: ${fullDate.format(anchorDate)}`;
-  elements.statusText.textContent = 'Escala salva neste aparelho. As folgas aparecem em verde em todos os meses.';
+  elements.statusTitle.textContent = `Base: ${anchorDate.getDate().toString().padStart(2, '0')}/${(anchorDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  elements.statusText.textContent = '';
   renderCalendar();
   renderNextDays();
 }
@@ -374,6 +483,56 @@ function renderNextDays() {
   });
 
   elements.nextDaysList.replaceChildren(fragment);
+}
+
+
+let electronCollisionWatcherStarted = false;
+
+function startElectronCollisionWatcher() {
+  if (electronCollisionWatcherStarted) return;
+  electronCollisionWatcherStarted = true;
+
+  const watch = () => {
+    document.querySelectorAll('.calendar-day.single-off, .calendar-day.double-off').forEach((cell) => {
+      const electronA = cell.querySelector('.electron-a i');
+      const electronB = cell.querySelector('.electron-b i');
+      if (!electronA || !electronB) return;
+
+      const a = electronA.getBoundingClientRect();
+      const b = electronB.getBoundingClientRect();
+      if (!a.width || !b.width) return;
+
+      const ax = a.left + a.width / 2;
+      const ay = a.top + a.height / 2;
+      const bx = b.left + b.width / 2;
+      const by = b.top + b.height / 2;
+      const distance = Math.hypot(ax - bx, ay - by);
+      const near = cell.dataset.electronsNear === 'true';
+
+      if (distance <= 8 && !near) {
+        const bounds = cell.getBoundingClientRect();
+        const collisionX = ((ax + bx) / 2) - bounds.left;
+        const collisionY = ((ay + by) / 2) - bounds.top;
+
+        cell.dataset.electronsNear = 'true';
+        cell.style.setProperty('--collision-x', `${collisionX}px`);
+        cell.style.setProperty('--collision-y', `${collisionY}px`);
+        cell.classList.remove('electron-collision');
+        void cell.offsetWidth;
+        cell.classList.add('electron-collision');
+
+        window.setTimeout(() => {
+          if (cell.isConnected) cell.classList.remove('electron-collision');
+        }, 520);
+      } else if (distance >= 13) {
+        cell.dataset.electronsNear = 'false';
+      }
+    });
+
+    window.requestAnimationFrame(watch);
+  };
+
+  window.requestAnimationFrame(watch);
 }
 
 function shiftMonth(amount) {
@@ -528,6 +687,12 @@ elements.monthViewport.addEventListener('touchend', (event) => {
 }, { passive: true });
 elements.resetButton.addEventListener('click', () => elements.resetDialog.showModal());
 elements.confirmReset.addEventListener('click', resetScale);
+elements.neonButton.addEventListener('click', openNeonPicker);
+elements.neonColorInput.addEventListener('input', (event) => applyNeonColor(event.target.value));
+elements.neonColorInput.addEventListener('change', (event) => {
+  applyNeonColor(event.target.value, true);
+  showToast('Cor neon salva.');
+});
 elements.themeButton.addEventListener('click', toggleTheme);
 
 document.addEventListener('visibilitychange', () => {
@@ -541,7 +706,9 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+applyNeonColor(activeNeon);
 applyTheme(activeTheme);
 setupInstallFlow();
 registerServiceWorker();
 renderAppState();
+startElectronCollisionWatcher();

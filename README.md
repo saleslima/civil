@@ -1,4 +1,4 @@
-# Controle de Folgas — COPOM Civil
+# CivilOff — COPOM Civil
 
 PWA responsivo para Android e iOS.
 

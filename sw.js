@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'copom-folgas-v1.2.0';
+const CACHE_NAME = 'civiloff-v3.8.0';
 const APP_SHELL = [
   './',
   './index.html',

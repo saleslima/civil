@@ -13,13 +13,21 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Folgas COPOM">
+  <meta name="apple-mobile-web-app-title" content="CivilOff">
 
-  <title>Controle de Folgas — COPOM Civil</title>
+  <title>CivilOff</title>
   <script>
     try {
       if (localStorage.getItem('copomCivilTheme:v1') === 'light') {
         document.documentElement.dataset.theme = 'light';
+      }
+
+      const savedNeon = localStorage.getItem('civilOffNeonColor:v1');
+      if (/^#[0-9a-f]{6}$/i.test(savedNeon || '')) {
+        const value = savedNeon.slice(1);
+        const rgb = [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16));
+        document.documentElement.style.setProperty('--neon', savedNeon);
+        document.documentElement.style.setProperty('--neon-rgb', rgb.join(', '));
       }
     } catch {}
   </script>
@@ -38,7 +46,7 @@
         </div>
         <div>
           <p class="eyebrow">COPOM CIVIL</p>
-          <h1>Controle de folgas</h1>
+          <h1>CivilOff</h1>
         </div>
       </div>
 
@@ -57,6 +65,10 @@
             <path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.5 8.5 0 1 0 20.2 15.2Z"></path>
           </svg>
         </button>
+        <button id="neonButton" class="icon-button neon-button" type="button" aria-label="Escolher cor neon" title="Escolher cor neon" hidden>
+          <span class="neon-swatch" aria-hidden="true"></span>
+        </button>
+        <input id="neonColorInput" class="neon-color-input" type="color" value="#4bd5ff" aria-label="Cor neon do layout">
       </div>
     </header>
 
@@ -146,7 +158,7 @@
 
     <footer>
       <span class="footer-line"></span>
-      <p>Criado por <strong>Cb PM Sales Lima & SMN.</strong></p>
+      <p>Criado por: <strong>Cb PM Sales Lima &amp; SMN</strong></p>
     </footer>
   </div>
 

@@ -1,7 +1,7 @@
 {
-  "name": "Controle de Folgas — COPOM Civil",
-  "short_name": "Folgas COPOM",
-  "description": "Calendário de controle de folgas do COPOM Civil, com feriados e funcionamento offline.",
+  "name": "CivilOff",
+  "short_name": "CivilOff",
+  "description": "CivilOff — controle de folgas do COPOM Civil com funcionamento offline.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
