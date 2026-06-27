@@ -1,39 +1,23 @@
 # Controle de Folgas — COPOM Civil
 
-PWA responsivo para Android e iOS, construído em HTML, CSS e JavaScript puros.
+PWA responsivo para Android e iOS.
+
+## Funcionamento
+
+1. Toque em **Definir folga unitária**.
+2. Escolha a data no calendário aberto pelo sistema.
+3. A escala é salva automaticamente no `localStorage` do navegador.
+4. O calendário mensal passa a exibir as folgas em verde.
+5. Use as setas ou deslize o calendário para navegar entre os meses.
+6. A configuração só é apagada ao tocar em **RESET** e confirmar.
 
 ## Regra da escala
 
-- A data escolhida é uma **folga unitária**.
-- Contando os dias seguintes em dias corridos, o **5º e o 6º dias** são marcados como **folga dupla**.
-- Seis dias após a segunda folga, ocorre nova **folga unitária**.
-- O ciclo se repete a cada 12 dias: posição 0 = unitária; posições 5 e 6 = dupla.
-
-## Persistência
-
-A data-base é salva no `localStorage` com a chave `copomCivilFolgaConfig:v1`. Recarregar, fechar o navegador ou reiniciar o celular não apaga a configuração. Ela só é removida pelo botão **RESET**.
-
-## Feriados
-
-O calendário inclui os feriados nacionais recorrentes, a Paixão de Cristo calculada pela data da Páscoa e o feriado estadual paulista de 9 de julho. Carnaval, Quarta-feira de Cinzas e Corpus Christi aparecem identificados como pontos facultativos.
-
-## Como executar localmente
-
-O PWA deve ser servido por HTTP/HTTPS; abrir o arquivo diretamente (`file://`) não ativa o Service Worker.
-
-Exemplo com Python:
-
-```bash
-python -m http.server 8080
-```
-
-Depois acesse `http://localhost:8080`.
+- A data escolhida é a folga unitária.
+- O 5º e o 6º dias seguintes são folgas duplas.
+- Seis dias após a segunda folga ocorre uma nova folga unitária.
+- O ciclo se repete automaticamente.
 
 ## Instalação
 
-- Android/Chrome: toque no raio amarelo e confirme a instalação.
-- iPhone/iPad/Safari: toque no raio, depois use **Compartilhar > Adicionar à Tela de Início**.
-
-## Publicação
-
-Envie todos os arquivos desta pasta para uma hospedagem HTTPS, preservando a estrutura de diretórios.
+Publique todos os arquivos em uma hospedagem HTTPS. Em Android, use a opção de instalar aplicativo do navegador. Em iPhone/iPad, abra no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.

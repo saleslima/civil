@@ -8,23 +8,29 @@ const DOUBLE_OFFSETS = new Set([5, 6]);
 const monthNames = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
 const fullDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 const weekdayLong = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' });
-const weekdayShort = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' });
 const compactDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' });
 
 const elements = {
+  calendarPanel: document.querySelector('#calendarPanel'),
   calendarTitle: document.querySelector('#calendarTitle'),
-  calendarScroller: document.querySelector('#calendarScroller'),
+  monthViewport: document.querySelector('#monthViewport'),
+  monthGrid: document.querySelector('#monthGrid'),
   previousMonth: document.querySelector('#previousMonth'),
   nextMonth: document.querySelector('#nextMonth'),
   monthPickerButton: document.querySelector('#monthPickerButton'),
   monthPicker: document.querySelector('#monthPicker'),
   todayButton: document.querySelector('#todayButton'),
+  selectedCard: document.querySelector('#selectedCard'),
   selectedWeekday: document.querySelector('#selectedWeekday'),
   selectedDate: document.querySelector('#selectedDate'),
   selectedHoliday: document.querySelector('#selectedHoliday'),
   selectedBadge: document.querySelector('#selectedBadge'),
   setupPanel: document.querySelector('#setupPanel'),
   setAnchorButton: document.querySelector('#setAnchorButton'),
+  dateDialog: document.querySelector('#dateDialog'),
+  dateForm: document.querySelector('#dateForm'),
+  anchorDateInput: document.querySelector('#anchorDateInput'),
+  cancelDate: document.querySelector('#cancelDate'),
   nextDaysPanel: document.querySelector('#nextDaysPanel'),
   nextDaysList: document.querySelector('#nextDaysList'),
   resetButton: document.querySelector('#resetButton'),
@@ -39,11 +45,12 @@ const elements = {
 };
 
 const today = startOfDay(new Date());
-let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
-let selectedDate = today;
 let anchorDate = loadAnchorDate();
+let selectedDate = anchorDate || today;
+let visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
 let deferredInstallPrompt = null;
 let toastTimer = null;
+let touchStartX = null;
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0);
@@ -60,7 +67,9 @@ function fromLocalISO(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(year, month - 1, day, 12);
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (Number.isNaN(date.getTime())) return null;
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return date;
 }
 
 function addDays(date, amount) {
@@ -96,7 +105,7 @@ function saveAnchorDate(date) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     anchorDate: toLocalISO(date),
     savedAt: new Date().toISOString(),
-    version: 1
+    version: 2
   }));
 }
 
@@ -123,9 +132,7 @@ function getHolidays(year) {
   const add = (month, day, name, type = 'Feriado nacional') => {
     map.set(toLocalISO(new Date(year, month - 1, day, 12)), { name, type });
   };
-  const addDate = (date, name, type) => {
-    map.set(toLocalISO(date), { name, type });
-  };
+  const addDate = (date, name, type) => map.set(toLocalISO(date), { name, type });
 
   add(1, 1, 'Confraternização Universal');
   add(4, 21, 'Tiradentes');
@@ -165,91 +172,89 @@ function scheduleLabel(type) {
   return 'Sem classificação';
 }
 
-function renderCalendar({ focusSelected = false } = {}) {
+function createBlankCell() {
+  const blank = document.createElement('span');
+  blank.className = 'calendar-day blank';
+  blank.setAttribute('aria-hidden', 'true');
+  return blank;
+}
+
+function renderCalendar(direction = 0) {
+  if (!anchorDate) return;
+
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = new Date(year, month, 1, 12).getDay();
   const holidays = getHolidays(year);
+  const fragment = document.createDocumentFragment();
 
   elements.calendarTitle.textContent = titleCase(monthNames.format(visibleMonth));
   elements.monthPicker.value = `${year}-${String(month + 1).padStart(2, '0')}`;
-  elements.calendarScroller.replaceChildren();
 
-  const fragment = document.createDocumentFragment();
+  for (let index = 0; index < firstWeekday; index += 1) fragment.appendChild(createBlankCell());
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const date = new Date(year, month, day, 12);
     const iso = toLocalISO(date);
     const holiday = holidays.get(iso);
-    const scheduleType = scheduleTypeFor(date);
+    const type = scheduleTypeFor(date);
 
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'day-card';
-    card.dataset.date = iso;
-    card.setAttribute('role', 'option');
-    card.setAttribute('aria-label', `${fullDate.format(date)}${holiday ? `, ${holiday.name}` : ''}${scheduleType ? `, ${scheduleLabel(scheduleType)}` : ''}`);
-    card.setAttribute('aria-selected', String(sameDate(date, selectedDate)));
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'calendar-day';
+    cell.dataset.date = iso;
+    cell.setAttribute('role', 'gridcell');
+    cell.setAttribute('aria-selected', String(sameDate(date, selectedDate)));
+    cell.setAttribute('aria-label', `${fullDate.format(date)}${holiday ? `, ${holiday.name}` : ''}, ${scheduleLabel(type)}`);
 
-    if (sameDate(date, today)) card.classList.add('today');
-    if (sameDate(date, selectedDate)) card.classList.add('selected');
-    if (holiday) card.classList.add('holiday');
-    if (scheduleType === 'single') card.classList.add('single-off');
-    if (scheduleType === 'double') card.classList.add('double-off');
-
-    const weekday = document.createElement('span');
-    weekday.className = 'weekday';
-    weekday.textContent = weekdayShort.format(date).replace('.', '');
+    if (sameDate(date, today)) cell.classList.add('today');
+    if (sameDate(date, selectedDate)) cell.classList.add('selected');
+    if (holiday) cell.classList.add('holiday');
+    if (type === 'single') cell.classList.add('single-off');
+    if (type === 'double') cell.classList.add('double-off');
 
     const number = document.createElement('strong');
-    number.className = 'day-number';
     number.textContent = String(day);
+    cell.appendChild(number);
 
-    const status = document.createElement('span');
-    status.className = 'day-status';
-    if (scheduleType === 'single') status.textContent = 'Unitária';
-    else if (scheduleType === 'double') status.textContent = 'Dupla';
-    else if (holiday) status.textContent = 'Feriado';
-    else status.textContent = '—';
+    if (type === 'single' || type === 'double') {
+      const mark = document.createElement('small');
+      mark.textContent = type === 'single' ? 'U' : 'D';
+      mark.setAttribute('aria-hidden', 'true');
+      cell.appendChild(mark);
+    }
 
-    card.append(weekday, number, status);
-    card.addEventListener('click', () => selectDate(date));
-    fragment.appendChild(card);
+    cell.addEventListener('click', () => selectDate(date));
+    fragment.appendChild(cell);
   }
 
-  elements.calendarScroller.appendChild(fragment);
+  const totalCells = firstWeekday + daysInMonth;
+  const trailingCells = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+  for (let index = 0; index < trailingCells; index += 1) fragment.appendChild(createBlankCell());
+
+  elements.monthGrid.replaceChildren(fragment);
   renderSelectedDate();
 
-  requestAnimationFrame(() => {
-    const selector = focusSelected
-      ? `[data-date="${toLocalISO(selectedDate)}"]`
-      : `[data-date="${toLocalISO(today)}"]`;
-    const target = elements.calendarScroller.querySelector(selector)
-      || elements.calendarScroller.querySelector('.selected')
-      || elements.calendarScroller.firstElementChild;
-    target?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  });
+  elements.monthGrid.classList.remove('slide-previous', 'slide-next');
+  if (direction !== 0) {
+    void elements.monthGrid.offsetWidth;
+    elements.monthGrid.classList.add(direction > 0 ? 'slide-next' : 'slide-previous');
+  }
 }
 
 function selectDate(date) {
   selectedDate = startOfDay(date);
-
-  if (selectedDate.getFullYear() !== visibleMonth.getFullYear() || selectedDate.getMonth() !== visibleMonth.getMonth()) {
-    visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
-    renderCalendar({ focusSelected: true });
-    return;
-  }
-
-  elements.calendarScroller.querySelectorAll('.day-card').forEach((card) => {
-    const isSelected = card.dataset.date === toLocalISO(selectedDate);
-    card.classList.toggle('selected', isSelected);
-    card.setAttribute('aria-selected', String(isSelected));
+  elements.monthGrid.querySelectorAll('.calendar-day[data-date]').forEach((cell) => {
+    const isSelected = cell.dataset.date === toLocalISO(selectedDate);
+    cell.classList.toggle('selected', isSelected);
+    cell.setAttribute('aria-selected', String(isSelected));
   });
-
   renderSelectedDate();
 }
 
 function renderSelectedDate() {
+  if (!anchorDate) return;
   const holiday = getHolidays(selectedDate.getFullYear()).get(toLocalISO(selectedDate));
   const type = scheduleTypeFor(selectedDate);
 
@@ -258,30 +263,29 @@ function renderSelectedDate() {
   elements.selectedHoliday.textContent = holiday ? `${holiday.name} · ${holiday.type}` : '';
   elements.selectedBadge.className = 'selected-badge neutral';
   elements.selectedBadge.textContent = scheduleLabel(type).toUpperCase();
-
   if (type) elements.selectedBadge.classList.add(type);
-  elements.setAnchorButton.disabled = Boolean(anchorDate);
 }
 
 function renderAppState() {
   const hasAnchor = Boolean(anchorDate);
   elements.setupPanel.hidden = hasAnchor;
+  elements.calendarPanel.hidden = !hasAnchor;
+  elements.selectedCard.hidden = !hasAnchor;
   elements.nextDaysPanel.hidden = !hasAnchor;
   elements.resetButton.hidden = !hasAnchor;
   elements.statusOrb.classList.toggle('active', hasAnchor);
 
   if (!hasAnchor) {
     elements.statusTitle.textContent = 'Nenhuma data definida';
-    elements.statusText.textContent = 'Escolha um dia no calendário para iniciar o ciclo.';
-    elements.setAnchorButton.disabled = false;
+    elements.statusText.textContent = 'Defina a primeira folga unitária para gerar a escala.';
     elements.nextDaysList.replaceChildren();
-  } else {
-    elements.statusTitle.textContent = `Base: ${fullDate.format(anchorDate)}`;
-    elements.statusText.textContent = 'Configuração salva neste aparelho. Recarregar ou fechar a página não altera a escala.';
-    renderNextDays();
+    return;
   }
 
-  renderCalendar({ focusSelected: true });
+  elements.statusTitle.textContent = `Base: ${fullDate.format(anchorDate)}`;
+  elements.statusText.textContent = 'Escala salva neste aparelho. As folgas aparecem em verde em todos os meses.';
+  renderCalendar();
+  renderNextDays();
 }
 
 function getNextOffDays(limit = 6) {
@@ -290,23 +294,19 @@ function getNextOffDays(limit = 6) {
   let cursor = diffDays(today, anchorDate) >= 0 ? today : anchorDate;
   let safety = 0;
 
-  while (results.length < limit && safety < 365) {
+  while (results.length < limit && safety < 730) {
     const type = scheduleTypeFor(cursor);
-    if (type === 'single' || type === 'double') {
-      results.push({ date: cursor, type });
-    }
+    if (type === 'single' || type === 'double') results.push({ date: cursor, type });
     cursor = addDays(cursor, 1);
     safety += 1;
   }
-
   return results;
 }
 
 function renderNextDays() {
-  const days = getNextOffDays(6);
   const fragment = document.createDocumentFragment();
 
-  days.forEach(({ date, type }) => {
+  getNextOffDays(6).forEach(({ date, type }) => {
     const holiday = getHolidays(date.getFullYear()).get(toLocalISO(date));
     const row = document.createElement('button');
     row.type = 'button';
@@ -331,10 +331,10 @@ function renderNextDays() {
 
     row.append(dayNumber, info, tag);
     row.addEventListener('click', () => {
-      selectedDate = date;
+      selectedDate = startOfDay(date);
       visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1, 12);
-      renderCalendar({ focusSelected: true });
-      window.scrollTo({ top: document.querySelector('.calendar-panel').offsetTop - 12, behavior: 'smooth' });
+      renderCalendar();
+      elements.calendarPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     fragment.appendChild(row);
   });
@@ -345,14 +345,39 @@ function renderNextDays() {
 function shiftMonth(amount) {
   visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1, 12);
   selectedDate = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1, 12);
-  renderCalendar({ focusSelected: true });
+  renderCalendar(amount);
 }
 
-function setAnchor() {
-  anchorDate = startOfDay(selectedDate);
+function openDatePicker() {
+  elements.anchorDateInput.value = toLocalISO(today);
+  elements.dateDialog.showModal();
+  try {
+    if (typeof elements.anchorDateInput.showPicker === 'function') elements.anchorDateInput.showPicker();
+    else {
+      elements.anchorDateInput.focus();
+      elements.anchorDateInput.click();
+    }
+  } catch {
+    elements.anchorDateInput.focus();
+  }
+}
+
+function setAnchorFromInput(event) {
+  event.preventDefault();
+  const pickedDate = fromLocalISO(elements.anchorDateInput.value);
+  if (!pickedDate) {
+    showToast('Escolha uma data válida.');
+    return;
+  }
+
+  anchorDate = startOfDay(pickedDate);
+  selectedDate = anchorDate;
+  visibleMonth = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1, 12);
   saveAnchorDate(anchorDate);
-  showToast('Escala salva neste aparelho.');
+  elements.dateDialog.close();
   renderAppState();
+  showToast('Folga unitária definida e salva.');
+  setTimeout(() => elements.calendarPanel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 }
 
 function resetScale() {
@@ -424,31 +449,53 @@ function registerServiceWorker() {
   }
 }
 
+elements.setAnchorButton.addEventListener('click', openDatePicker);
+elements.cancelDate.addEventListener('click', () => elements.dateDialog.close());
+elements.dateForm.addEventListener('submit', setAnchorFromInput);
 elements.previousMonth.addEventListener('click', () => shiftMonth(-1));
 elements.nextMonth.addEventListener('click', () => shiftMonth(1));
 elements.todayButton.addEventListener('click', () => {
   selectedDate = today;
   visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
-  renderCalendar({ focusSelected: true });
+  renderCalendar();
 });
 elements.monthPickerButton.addEventListener('click', () => {
-  if (typeof elements.monthPicker.showPicker === 'function') elements.monthPicker.showPicker();
-  else elements.monthPicker.click();
+  try {
+    if (typeof elements.monthPicker.showPicker === 'function') elements.monthPicker.showPicker();
+    else elements.monthPicker.click();
+  } catch {
+    elements.monthPicker.click();
+  }
 });
 elements.monthPicker.addEventListener('change', (event) => {
   const [year, month] = event.target.value.split('-').map(Number);
   if (!year || !month) return;
+  const direction = new Date(year, month - 1, 1) > visibleMonth ? 1 : -1;
   visibleMonth = new Date(year, month - 1, 1, 12);
   selectedDate = new Date(year, month - 1, 1, 12);
-  renderCalendar({ focusSelected: true });
+  renderCalendar(direction);
 });
-elements.setAnchorButton.addEventListener('click', setAnchor);
+elements.monthViewport.addEventListener('touchstart', (event) => {
+  touchStartX = event.changedTouches[0]?.clientX ?? null;
+}, { passive: true });
+elements.monthViewport.addEventListener('touchend', (event) => {
+  if (touchStartX === null) return;
+  const endX = event.changedTouches[0]?.clientX ?? touchStartX;
+  const distance = endX - touchStartX;
+  touchStartX = null;
+  if (Math.abs(distance) < 55) return;
+  shiftMonth(distance < 0 ? 1 : -1);
+}, { passive: true });
 elements.resetButton.addEventListener('click', () => elements.resetDialog.showModal());
 elements.confirmReset.addEventListener('click', resetScale);
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     anchorDate = loadAnchorDate();
+    if (anchorDate) {
+      selectedDate = selectedDate || anchorDate;
+      visibleMonth = visibleMonth || new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1, 12);
+    }
     renderAppState();
   }
 });

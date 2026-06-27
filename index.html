@@ -45,14 +45,26 @@
         <div>
           <p class="section-label">ESCALA ATIVA</p>
           <h2 id="statusTitle">Nenhuma data definida</h2>
-          <p id="statusText" class="status-text">Escolha um dia no calendário para iniciar o ciclo.</p>
+          <p id="statusText" class="status-text">Defina a primeira folga unitária para gerar a escala.</p>
         </div>
-        <div id="statusOrb" class="status-orb" aria-hidden="true">
-          <span></span>
-        </div>
+        <div id="statusOrb" class="status-orb" aria-hidden="true"><span></span></div>
       </section>
 
-      <section class="calendar-panel glass-card" aria-labelledby="calendarTitle">
+      <section id="setupPanel" class="setup-panel glass-card">
+        <div class="setup-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>
+        </div>
+        <div class="setup-copy">
+          <h2>Defina a data inicial</h2>
+          <p>Toque no botão abaixo. Um calendário será aberto para escolher a primeira <strong>folga unitária</strong>.</p>
+        </div>
+        <button id="setAnchorButton" class="primary-button" type="button">
+          <span>Definir folga unitária</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </section>
+
+      <section id="calendarPanel" class="calendar-panel glass-card" aria-labelledby="calendarTitle" hidden>
         <div class="calendar-toolbar">
           <button id="previousMonth" class="month-nav" type="button" aria-label="Mês anterior">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
@@ -70,31 +82,29 @@
         </div>
 
         <div class="legend" aria-label="Legenda do calendário">
-          <span><i class="legend-dot single"></i>Unitária</span>
-          <span><i class="legend-dot double"></i>Dupla</span>
+          <span><i class="legend-dot single"></i>Folga unitária</span>
+          <span><i class="legend-dot double"></i>Folga dupla</span>
           <span><i class="legend-dot holiday"></i>Feriado</span>
         </div>
 
-        <div id="calendarScroller" class="calendar-scroller" role="listbox" aria-label="Dias do mês"></div>
+        <div id="monthViewport" class="month-viewport">
+          <div class="weekday-row" aria-hidden="true">
+            <span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
+          </div>
+          <div id="monthGrid" class="month-grid" role="grid" aria-label="Calendário mensal"></div>
+        </div>
 
+        <p class="swipe-hint">Deslize para os lados ou use as setas para mudar o mês.</p>
         <button id="todayButton" class="text-button" type="button">Ir para hoje</button>
       </section>
 
-      <section class="selected-card glass-card" aria-live="polite">
+      <section id="selectedCard" class="selected-card glass-card" aria-live="polite" hidden>
         <div class="selected-date">
           <span id="selectedWeekday">—</span>
           <strong id="selectedDate">Selecione uma data</strong>
           <small id="selectedHoliday"></small>
         </div>
         <div id="selectedBadge" class="selected-badge neutral">SEM CLASSIFICAÇÃO</div>
-      </section>
-
-      <section id="setupPanel" class="setup-panel glass-card">
-        <p>Toque em uma data e defina esse dia como a primeira <strong>folga unitária</strong>.</p>
-        <button id="setAnchorButton" class="primary-button" type="button" disabled>
-          <span>Definir folga unitária</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
       </section>
 
       <section id="nextDaysPanel" class="next-days-panel glass-card" hidden>
@@ -120,13 +130,31 @@
     </footer>
   </div>
 
+  <dialog id="dateDialog" class="app-dialog date-dialog">
+    <form id="dateForm">
+      <div class="dialog-icon calendar-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>
+      </div>
+      <h2>Escolha a folga unitária</h2>
+      <p>Esta data será usada como base permanente da escala neste aparelho.</p>
+      <label class="date-field" for="anchorDateInput">
+        <span>DATA DA PRIMEIRA FOLGA</span>
+        <input id="anchorDateInput" type="date" required>
+      </label>
+      <div class="dialog-actions">
+        <button id="cancelDate" type="button" class="dialog-cancel">Cancelar</button>
+        <button type="submit" class="dialog-confirm date-confirm">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="resetDialog" class="app-dialog">
     <form method="dialog">
       <div class="dialog-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 8v5m0 3h.01M10.3 3.6 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.6L13.7 3.6a2 2 0 0 0-3.4 0Z"/></svg>
       </div>
       <h2>Resetar a escala?</h2>
-      <p>A data-base será apagada. O calendário só poderá ser configurado novamente após esta confirmação.</p>
+      <p>A data-base será apagada. Depois, será possível escolher uma nova folga unitária.</p>
       <div class="dialog-actions">
         <button value="cancel" class="dialog-cancel">Cancelar</button>
         <button id="confirmReset" value="confirm" class="dialog-confirm">Resetar</button>
