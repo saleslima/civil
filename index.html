@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Controle de folgas do COPOM Civil, com calendário, feriados e funcionamento offline.">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Folgas COPOM">
+
+  <title>Controle de Folgas — COPOM Civil</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" role="img"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
+        </div>
+        <div>
+          <p class="eyebrow">COPOM CIVIL</p>
+          <h1>Controle de folgas</h1>
+        </div>
+      </div>
+
+      <button id="installButton" class="icon-button install-button" type="button" aria-label="Instalar aplicativo" title="Instalar aplicativo">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
+      </button>
+    </header>
+
+    <main>
+      <section class="status-card glass-card" aria-labelledby="statusTitle">
+        <div>
+          <p class="section-label">ESCALA ATIVA</p>
+          <h2 id="statusTitle">Nenhuma data definida</h2>
+          <p id="statusText" class="status-text">Escolha um dia no calendário para iniciar o ciclo.</p>
+        </div>
+        <div id="statusOrb" class="status-orb" aria-hidden="true">
+          <span></span>
+        </div>
+      </section>
+
+      <section class="calendar-panel glass-card" aria-labelledby="calendarTitle">
+        <div class="calendar-toolbar">
+          <button id="previousMonth" class="month-nav" type="button" aria-label="Mês anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+
+          <button id="monthPickerButton" class="month-title" type="button" aria-label="Escolher mês">
+            <span id="calendarTitle">Mês</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+          </button>
+          <input id="monthPicker" type="month" tabindex="-1" aria-hidden="true">
+
+          <button id="nextMonth" class="month-nav" type="button" aria-label="Próximo mês">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+
+        <div class="legend" aria-label="Legenda do calendário">
+          <span><i class="legend-dot single"></i>Unitária</span>
+          <span><i class="legend-dot double"></i>Dupla</span>
+          <span><i class="legend-dot holiday"></i>Feriado</span>
+        </div>
+
+        <div id="calendarScroller" class="calendar-scroller" role="listbox" aria-label="Dias do mês"></div>
+
+        <button id="todayButton" class="text-button" type="button">Ir para hoje</button>
+      </section>
+
+      <section class="selected-card glass-card" aria-live="polite">
+        <div class="selected-date">
+          <span id="selectedWeekday">—</span>
+          <strong id="selectedDate">Selecione uma data</strong>
+          <small id="selectedHoliday"></small>
+        </div>
+        <div id="selectedBadge" class="selected-badge neutral">SEM CLASSIFICAÇÃO</div>
+      </section>
+
+      <section id="setupPanel" class="setup-panel glass-card">
+        <p>Toque em uma data e defina esse dia como a primeira <strong>folga unitária</strong>.</p>
+        <button id="setAnchorButton" class="primary-button" type="button" disabled>
+          <span>Definir folga unitária</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </section>
+
+      <section id="nextDaysPanel" class="next-days-panel glass-card" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="section-label">PRÓXIMAS FOLGAS</p>
+            <h2>Sequência programada</h2>
+          </div>
+          <span class="pulse-dot" aria-hidden="true"></span>
+        </div>
+        <div id="nextDaysList" class="next-days-list"></div>
+      </section>
+
+      <button id="resetButton" class="reset-button" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg>
+        RESET
+      </button>
+    </main>
+
+    <footer>
+      <span class="footer-line"></span>
+      <p>Criado por <strong>Cb PM Sales Lima</strong></p>
+    </footer>
+  </div>
+
+  <dialog id="resetDialog" class="app-dialog">
+    <form method="dialog">
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 8v5m0 3h.01M10.3 3.6 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.6L13.7 3.6a2 2 0 0 0-3.4 0Z"/></svg>
+      </div>
+      <h2>Resetar a escala?</h2>
+      <p>A data-base será apagada. O calendário só poderá ser configurado novamente após esta confirmação.</p>
+      <div class="dialog-actions">
+        <button value="cancel" class="dialog-cancel">Cancelar</button>
+        <button id="confirmReset" value="confirm" class="dialog-confirm">Resetar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="iosInstallDialog" class="app-dialog">
+    <form method="dialog">
+      <div class="dialog-icon bolt" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
+      </div>
+      <h2>Instalar no iPhone/iPad</h2>
+      <p>No Safari, toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>.</p>
+      <button value="close" class="dialog-confirm full">Entendi</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
