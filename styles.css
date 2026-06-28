@@ -1782,7 +1782,7 @@ html[data-operation-mode="193"] .operation-button.emergency.active {
   overflow: hidden;
   border-bottom: 1px solid rgba(var(--neon-rgb), .14);
   color: var(--neon);
-  font-size: 1rem;
+  font-size: .67rem;
   font-weight: 720;
   line-height: 1.5;
   white-space: nowrap;
@@ -2229,4 +2229,95 @@ html[data-operation-mode="193"].fire-phase .calendar-day.double-off .fire-layer,
 html[data-operation-mode="193"].water-phase .calendar-day.single-off .fire-layer,
 html[data-operation-mode="193"].water-phase .calendar-day.double-off .fire-layer {
   display: flex;
+}
+
+/* CivilOff v4.6.1 — controles na mesma linha no celular */
+@media (max-width: 520px) {
+  .topbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .topbar-actions {
+    width: auto;
+    margin-left: auto;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .install-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .install-button span {
+    display: none;
+  }
+
+  .install-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .theme-button,
+  .neon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .operation-switch {
+    grid-template-columns: repeat(2, 31px);
+    gap: 2px;
+    padding: 2px;
+    border-radius: 11px;
+  }
+
+  .operation-button {
+    width: 31px;
+    min-height: 32px;
+    border-radius: 8px;
+    font-size: .57rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar-actions {
+    width: auto;
+  }
+
+  .brand-mark {
+    width: 37px;
+    height: 37px;
+  }
+
+  .user-counter {
+    min-width: 38px;
+    height: 36px;
+  }
+
+  .theme-button,
+  .neon-button,
+  .install-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .operation-switch {
+    grid-template-columns: repeat(2, 29px);
+  }
+
+  .operation-button {
+    width: 29px;
+    min-height: 30px;
+    font-size: .54rem;
+  }
 }

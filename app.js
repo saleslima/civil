@@ -5,6 +5,7 @@ const THEME_KEY = 'copomCivilTheme:v1';
 const NEON_KEY = 'civilOffNeonColor:v1';
 const DEFAULT_NEON = '#4bd5ff';
 const LOCAL_USER_COUNT_KEY = 'civilOffLocalUserCount:v1';
+const OPERATION_MODE_KEY = 'civilOffOperationMode:v1';
 const CYCLE_DAYS = 12;
 const SINGLE_OFFSETS = new Set([0]);
 const DOUBLE_OFFSETS = new Set([6, 7]);
@@ -67,7 +68,7 @@ let installVisibilityTimer = null;
 let touchStartX = null;
 let activeTheme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 let activeNeon = loadNeonColor();
-let activeOperationMode = '190';
+let activeOperationMode = loadOperationMode();
 let emergencyTimers = [];
 
 function startOfDay(date) {
@@ -183,13 +184,29 @@ function renderLocalUserCount() {
   elements.userCount.textContent = String(loadLocalUserCount());
 }
 
+function loadOperationMode() {
+  try {
+    return localStorage.getItem(OPERATION_MODE_KEY) === '193' ? '193' : '190';
+  } catch {
+    return '190';
+  }
+}
+
 function clearEmergencyTimers() {
   emergencyTimers.forEach((timer) => clearTimeout(timer));
   emergencyTimers = [];
 }
 
-function setOperationMode(mode, replay = true) {
+function setOperationMode(mode, replay = true, persist = true) {
   activeOperationMode = mode === '193' ? '193' : '190';
+
+  if (persist) {
+    try {
+      localStorage.setItem(OPERATION_MODE_KEY, activeOperationMode);
+    } catch {
+      // O modo continua ativo nesta sessão mesmo sem armazenamento.
+    }
+  }
   clearEmergencyTimers();
   document.documentElement.dataset.operationMode = activeOperationMode;
   document.documentElement.classList.remove('fire-phase', 'water-phase', 'smoke-phase', 'emergency-revealed');
@@ -840,7 +857,7 @@ renderDailyThought();
 renderLocalUserCount();
 applyNeonColor(activeNeon);
 applyTheme(activeTheme);
-setOperationMode('190', false);
+setOperationMode(activeOperationMode, false, false);
 setupInstallFlow();
 registerServiceWorker();
 renderAppState();
