@@ -18,9 +18,11 @@
   <title>CivilOff</title>
   <script>
     try {
-      if (localStorage.getItem('copomCivilTheme:v1') === 'light') {
-        document.documentElement.dataset.theme = 'light';
-      }
+      const savedTheme = localStorage.getItem('copomCivilTheme:v1');
+      document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
+
+      const savedOperationMode = localStorage.getItem('civilOffOperationMode:v1');
+      document.documentElement.dataset.operationMode = savedOperationMode === '193' ? '193' : '190';
 
       const savedNeon = localStorage.getItem('civilOffNeonColor:v1');
       if (/^#[0-9a-f]{6}$/i.test(savedNeon || '')) {

@@ -752,7 +752,7 @@ function setupInstallFlow() {
   clearTimeout(installVisibilityTimer);
   installVisibilityTimer = setTimeout(() => {
     elements.installButton.classList.add('hidden');
-  }, 10000);
+  }, 20000);
 
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
