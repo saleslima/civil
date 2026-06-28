@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'civiloff-v4.6.3';
+const CACHE_NAME = 'civiloff-v4.6.4';
 const APP_SHELL = [
   './',
   './index.html',

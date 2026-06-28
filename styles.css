@@ -1592,13 +1592,20 @@ html[data-theme="light"] footer strong {
 }
 
 @media (max-width: 350px) {
-  .install-button span {
-    display: none;
+  .install-button {
+    width: auto;
+    min-width: 56px;
+    padding: 0 6px;
+    gap: 4px;
   }
 
-  .install-button {
-    width: 42px;
-    padding: 0;
+  .install-button span {
+    display: inline;
+    font-size: .54rem;
+  }
+
+  .install-button svg {
+    display: none;
   }
 }
 
@@ -2254,18 +2261,21 @@ html[data-operation-mode="193"].water-phase .calendar-day.double-off .fire-layer
   }
 
   .install-button {
-    width: 36px;
+    width: auto;
+    min-width: 68px;
     height: 36px;
-    padding: 0;
+    padding: 0 7px;
+    gap: 4px;
   }
 
   .install-button span {
-    display: none;
+    display: inline;
+    font-size: .58rem;
   }
 
   .install-button svg {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
   }
 
   .theme-button,
@@ -2305,10 +2315,20 @@ html[data-operation-mode="193"].water-phase .calendar-day.double-off .fire-layer
   }
 
   .theme-button,
-  .neon-button,
-  .install-button {
+  .neon-button {
     width: 34px;
     height: 34px;
+  }
+
+  .install-button {
+    min-width: 60px;
+    height: 34px;
+    padding-inline: 6px;
+  }
+
+  .install-button span {
+    display: inline;
+    font-size: .55rem;
   }
 
   .operation-switch {

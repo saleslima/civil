@@ -27,4 +27,4 @@ Publique todos os arquivos desta pasta em uma hospedagem HTTPS, mantendo a estru
 As escolhas de tema claro/escuro e modo operacional 190/193 ficam salvas no navegador e são restauradas após recarregar ou reabrir o PWA.
 
 
-- O botão Instalar permanece visível por 20 segundos ao abrir o app.
+- O botão Instalar permanece visível por 60 segundos ao abrir o app.
