@@ -1789,7 +1789,7 @@ html[data-operation-mode="193"] .operation-button.emergency.active {
   overflow: hidden;
   border-bottom: 1px solid rgba(var(--neon-rgb), .14);
   color: var(--neon);
-  font-size: .67rem;
+  font-size: 1rem;
   font-weight: 720;
   line-height: 1.5;
   white-space: nowrap;
