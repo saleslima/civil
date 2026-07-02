@@ -11,7 +11,7 @@ PWA móvel para controle de folgas do COPOM Civil.
 - Modo 190 como padrão.
 - Modo 193 com tema vermelho/amarelo, fogo por 5 segundos e extinção por água.
 - 365 reflexões diárias inspiradas em pensadores, exibidas em faixa animada.
-- Contador local acompanhado por ícone de três usuários.
+- Contador online em tempo real via Firebase Realtime Database, acompanhado por ícone de três usuários.
 - Funcionamento offline após o primeiro carregamento.
 - Instalação como PWA em Android e iOS.
 
@@ -19,7 +19,7 @@ PWA móvel para controle de folgas do COPOM Civil.
 
 Publique todos os arquivos desta pasta em uma hospedagem HTTPS, mantendo a estrutura original.
 
-> O contador de usuários desta versão é local ao aparelho. Uma contagem global exige banco de dados ou API no servidor.
+> O contador de usuários desta versão usa o Firebase Realtime Database informado no arquivo `firebase-presence.js`.
 
 
 ## Persistência dos modos
@@ -28,3 +28,32 @@ As escolhas de tema claro/escuro e modo operacional 190/193 ficam salvas no nave
 
 
 - O botão Instalar permanece visível por 60 segundos ao abrir o app.
+
+## Contador online pelo Firebase
+
+O arquivo `firebase-presence.js` registra cada navegador conectado em `presence/civiloff/onlineUsers` e remove essa presença automaticamente quando a página é fechada ou a conexão cai. O número exibido ao lado do ícone de usuários é a quantidade de navegadores/dispositivos online naquele momento.
+
+Para funcionar em produção, o Realtime Database do projeto `civiloff` precisa estar ativo e permitir leitura/escrita nesse caminho. Uma configuração simples para este contador é:
+
+```json
+{
+  "rules": {
+    "presence": {
+      "civiloff": {
+        "onlineUsers": {
+          ".read": true,
+          "$userId": {
+            "$connectionId": {
+              ".write": true,
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Como a página é pública e não usa login, esse contador mede presença online anônima. Ele não identifica nome, e-mail ou CPF do usuário.
+

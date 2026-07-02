@@ -46,14 +46,14 @@
         <div class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32" role="img"><path d="M18.2 2 6.9 17.2h7.2L12.8 30 25.1 13.8h-7.3L18.2 2Z"/></svg>
         </div>
-        <div class="user-counter" aria-label="Usuários neste aparelho">
+        <div class="user-counter" aria-label="Usuários online agora">
           <svg viewBox="0 0 32 24" aria-hidden="true">
             <circle cx="16" cy="6" r="4"></circle>
             <circle cx="7" cy="8" r="3"></circle>
             <circle cx="25" cy="8" r="3"></circle>
             <path d="M9 22c.4-6 3-9 7-9s6.6 3 7 9M1.5 22c.3-4.4 2.2-6.8 5.5-6.8 1.5 0 2.7.5 3.6 1.4M30.5 22c-.3-4.4-2.2-6.8-5.5-6.8-1.5 0-2.7.5-3.6 1.4"></path>
           </svg>
-          <strong id="userCount">1</strong>
+          <strong id="userCount">—</strong>
         </div>
         <div>
           <p class="eyebrow">COPOM CIVIL</p>
@@ -232,5 +232,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js" defer></script>
+  <script type="module" src="firebase-presence.js"></script>
 </body>
 </html>

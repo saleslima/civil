@@ -1,0 +1,17 @@
+{
+  "rules": {
+    "presence": {
+      "civiloff": {
+        "onlineUsers": {
+          ".read": true,
+          "$userId": {
+            "$connectionId": {
+              ".write": true,
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        }
+      }
+    }
+  }
+}
