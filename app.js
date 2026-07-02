@@ -4,6 +4,7 @@ const STORAGE_KEY = 'copomCivilFolgaConfig:v1';
 const THEME_KEY = 'copomCivilTheme:v1';
 const NEON_KEY = 'civilOffNeonColor:v1';
 const DEFAULT_NEON = '#4bd5ff';
+const LOCAL_USER_COUNT_KEY = 'civilOffLocalUserCount:v1';
 const OPERATION_MODE_KEY = 'civilOffOperationMode:v1';
 const CYCLE_DAYS = 12;
 const SINGLE_OFFSETS = new Set([0]);
@@ -167,10 +168,22 @@ function renderDailyThought() {
   elements.dailyThought.textContent = DAILY_THOUGHTS[index];
 }
 
-function renderUserCountPlaceholder() {
+function loadLocalUserCount() {
+  try {
+    const saved = Number.parseInt(localStorage.getItem(LOCAL_USER_COUNT_KEY) || '1', 10);
+    const count = Number.isFinite(saved) && saved > 0 ? saved : 1;
+    localStorage.setItem(LOCAL_USER_COUNT_KEY, String(count));
+    return count;
+  } catch {
+    return 1;
+  }
+}
+
+function renderLocalUserCount() {
   if (!elements.userCount) return;
-  elements.userCount.textContent = '—';
-  elements.userCount.closest('.user-counter')?.setAttribute('title', 'Conectando ao contador online...');
+  // O contador real é preenchido pelo Firebase em firebase-devices.js.
+  // Mantém o traço enquanto o banco carrega, sem somar usuário local falso.
+  elements.userCount.textContent = elements.userCount.textContent || '—';
 }
 
 function loadOperationMode() {
@@ -843,7 +856,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 renderDailyThought();
-renderUserCountPlaceholder();
+renderLocalUserCount();
 applyNeonColor(activeNeon);
 applyTheme(activeTheme);
 setOperationMode(activeOperationMode, false, false);

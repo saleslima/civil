@@ -1,17 +1,17 @@
 {
   "rules": {
-    "presence": {
+    "deviceIds": {
       "civiloff": {
-        "onlineUsers": {
-          ".read": true,
-          "$userId": {
-            "$connectionId": {
-              ".write": true,
-              ".validate": "newData.isBoolean()"
-            }
-          }
+        ".read": true,
+        "$deviceId": {
+          ".write": "newData.child('deviceKey').val() === $deviceId",
+          ".validate": "newData.hasChildren(['deviceKey', 'firstSeenAt', 'lastSeenAt'])"
         }
       }
+    },
+    "presence": {
+      ".read": false,
+      ".write": false
     }
   }
 }

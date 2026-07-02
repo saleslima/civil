@@ -11,7 +11,7 @@ PWA móvel para controle de folgas do COPOM Civil.
 - Modo 190 como padrão.
 - Modo 193 com tema vermelho/amarelo, fogo por 5 segundos e extinção por água.
 - 365 reflexões diárias inspiradas em pensadores, exibidas em faixa animada.
-- Contador online em tempo real via Firebase Realtime Database, acompanhado por ícone de três usuários.
+- Contador local acompanhado por ícone de três usuários.
 - Funcionamento offline após o primeiro carregamento.
 - Instalação como PWA em Android e iOS.
 
@@ -19,7 +19,7 @@ PWA móvel para controle de folgas do COPOM Civil.
 
 Publique todos os arquivos desta pasta em uma hospedagem HTTPS, mantendo a estrutura original.
 
-> O contador de usuários desta versão usa o Firebase Realtime Database informado no arquivo `firebase-presence.js`.
+> O contador de usuários desta versão é local ao aparelho. Uma contagem global exige banco de dados ou API no servidor.
 
 
 ## Persistência dos modos
@@ -29,31 +29,30 @@ As escolhas de tema claro/escuro e modo operacional 190/193 ficam salvas no nave
 
 - O botão Instalar permanece visível por 60 segundos ao abrir o app.
 
-## Contador online pelo Firebase
+## Contador de dispositivos únicos com Firebase
 
-O arquivo `firebase-presence.js` registra cada navegador conectado em `presence/civiloff/onlineUsers` e remove essa presença automaticamente quando a página é fechada ou a conexão cai. O número exibido ao lado do ícone de usuários é a quantidade de navegadores/dispositivos online naquele momento.
+Esta versão não usa contador online. Ela registra cada aparelho/navegador uma única vez no Firebase Realtime Database e exibe o total de dispositivos únicos que já abriram a página.
 
-Para funcionar em produção, o Realtime Database do projeto `civiloff` precisa estar ativo e permitir leitura/escrita nesse caminho. Uma configuração simples para este contador é:
+O navegador não permite capturar o MAC real do dispositivo. Por isso, o app cria um ID anônimo do tipo `device_xxxxx`, salva esse ID no `localStorage` do próprio aparelho e usa esse ID como chave no banco. Como a chave é única, o mesmo dispositivo/navegador não cria uma segunda entrada quando abre a página novamente.
 
-```json
-{
-  "rules": {
-    "presence": {
-      "civiloff": {
-        "onlineUsers": {
-          ".read": true,
-          "$userId": {
-            "$connectionId": {
-              ".write": true,
-              ".validate": "newData.isBoolean()"
-            }
-          }
-        }
-      }
-    }
-  }
-}
+Caminho usado no Realtime Database:
+
+```text
+deviceIds/civiloff/{deviceId}
 ```
 
-Como a página é pública e não usa login, esse contador mede presença online anônima. Ele não identifica nome, e-mail ou CPF do usuário.
+A estrutura esperada é semelhante a:
 
+```text
+deviceIds
+  civiloff
+    device_abc123
+      deviceKey: "device_abc123"
+      firstSeenAt: ...
+      lastSeenAt: ...
+      userAgent: "..."
+```
+
+O caminho antigo `presence/civiloff/onlineUsers` pertence à versão anterior de usuários online. Ele pode ser apagado manualmente no Firebase Console depois de publicar esta versão.
+
+Use o conteúdo de `database.rules.json` nas regras do Realtime Database.

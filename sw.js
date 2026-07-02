@@ -1,12 +1,12 @@
 'use strict';
 
-const CACHE_NAME = 'civiloff-v4.7.0';
+const CACHE_NAME = 'civiloff-v5.0.0';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
-  './firebase-presence.js',
+  './firebase-devices.js',
   './manifest.webmanifest',
   './icons/favicon.svg',
   './icons/icon-192.png',

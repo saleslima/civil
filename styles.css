@@ -1694,14 +1694,14 @@ html[data-theme="light"] .glass-card {
 }
 
 
-/* CivilOff v4 — modos 190/193, pensamento diário e contador online */
+/* CivilOff v4 — modos 190/193, pensamento diário e contador local */
 .user-counter {
   display: grid;
   grid-template-columns: 28px auto;
   align-items: center;
   gap: 4px;
   flex: 0 0 auto;
-  min-width: 52px;
+  min-width: 48px;
   height: 42px;
   padding: 0 7px 0 5px;
   border: 1px solid rgba(255, 213, 31, .28);
@@ -1723,7 +1723,7 @@ html[data-theme="light"] .glass-card {
 }
 
 .user-counter strong {
-  min-width: 14px;
+  min-width: 10px;
   font-size: .78rem;
   font-weight: 900;
   line-height: 1;
