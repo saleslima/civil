@@ -89,6 +89,11 @@
 
 
     <main>
+      <nav class="scale-tabs" role="tablist" aria-label="Tipo de escala">
+        <button type="button" id="atendTab" class="scale-tab active" role="tab" aria-selected="true">ATEND</button>
+        <button type="button" id="supvTab" class="scale-tab" role="tab" aria-selected="false">SUPV</button>
+      </nav>
+
       <section class="status-card glass-card" aria-labelledby="statusTitle">
         <div class="status-content">
           <div class="thought-marquee" aria-label="Pensamento do dia">
@@ -106,11 +111,11 @@
           <svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>
         </div>
         <div class="setup-copy">
-          <h2>Defina a data inicial</h2>
-          <p>Toque no botão abaixo. Um calendário será aberto para escolher a primeira <strong>folga unitária</strong>.</p>
+          <h2 id="setupTitle">Defina a data inicial</h2>
+          <p id="setupDescription">Toque no botão abaixo. Um calendário será aberto para escolher a primeira <strong>folga unitária</strong>.</p>
         </div>
         <button id="setAnchorButton" class="primary-button" type="button">
-          <span>Definir folga unitária</span>
+          <span id="setAnchorLabel">Definir folga unitária</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
         </button>
       </section>
@@ -133,8 +138,8 @@
         </div>
 
         <div class="legend" aria-label="Legenda do calendário">
-          <span><i class="legend-dot single"></i>Folga unitária</span>
-          <span><i class="legend-dot double"></i>Folga dupla</span>
+          <span><i class="legend-dot single"></i><span id="legendSingleLabel">Folga unitária</span></span>
+          <span id="legendDouble"><i class="legend-dot double"></i>Folga dupla</span>
           <span><i class="legend-dot holiday"></i>Feriado</span>
         </div>
 
@@ -166,7 +171,7 @@
       <section id="nextDaysPanel" class="next-days-panel glass-card" hidden>
         <div class="panel-heading">
           <div>
-            <p class="section-label">PRÓXIMAS FOLGAS</p>
+            <p id="upcomingLabel" class="section-label">PRÓXIMAS FOLGAS</p>
             <h2>Sequência programada</h2>
           </div>
           <span class="pulse-dot" aria-hidden="true"></span>
@@ -191,10 +196,10 @@
       <div class="dialog-icon calendar-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>
       </div>
-      <h2>Escolha a folga unitária</h2>
-      <p>Esta data será usada como base permanente da escala neste aparelho.</p>
+      <h2 id="dateDialogTitle">Escolha a folga unitária</h2>
+      <p id="dateDialogDescription">Esta data será usada como base permanente da escala neste aparelho.</p>
       <label class="date-field" for="anchorDateInput">
-        <span>DATA DA PRIMEIRA FOLGA</span>
+        <span id="dateFieldLabel">DATA DA PRIMEIRA FOLGA</span>
         <input id="anchorDateInput" type="date" required>
       </label>
       <div class="dialog-actions">
@@ -210,7 +215,7 @@
         <svg viewBox="0 0 24 24"><path d="M12 8v5m0 3h.01M10.3 3.6 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.6L13.7 3.6a2 2 0 0 0-3.4 0Z"/></svg>
       </div>
       <h2>Resetar a escala?</h2>
-      <p>A data-base será apagada. Depois, será possível escolher uma nova folga unitária.</p>
+      <p id="resetDescription">A data-base será apagada. Depois, será possível escolher uma nova folga unitária.</p>
       <div class="dialog-actions">
         <button value="cancel" class="dialog-cancel">Cancelar</button>
         <button id="confirmReset" value="confirm" class="dialog-confirm">Resetar</button>

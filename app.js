@@ -1,6 +1,8 @@
 'use strict';
 
 const STORAGE_KEY = 'copomCivilFolgaConfig:v1';
+const SUPV_STORAGE_KEY = 'copomCivilSupvConfig:v1';
+const SCALE_TAB_KEY = 'copomCivilScaleTab:v1';
 const THEME_KEY = 'copomCivilTheme:v1';
 const NEON_KEY = 'civilOffNeonColor:v1';
 const DEFAULT_NEON = '#4bd5ff';
@@ -17,6 +19,18 @@ const compactDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 's
 
 const elements = {
   calendarPanel: document.querySelector('#calendarPanel'),
+  atendTab: document.querySelector('#atendTab'),
+  supvTab: document.querySelector('#supvTab'),
+  setupDescription: document.querySelector('#setupDescription'),
+  setupTitle: document.querySelector('#setupTitle'),
+  setAnchorLabel: document.querySelector('#setAnchorLabel'),
+  dateDialogTitle: document.querySelector('#dateDialogTitle'),
+  dateDialogDescription: document.querySelector('#dateDialogDescription'),
+  dateFieldLabel: document.querySelector('#dateFieldLabel'),
+  resetDescription: document.querySelector('#resetDescription'),
+  upcomingLabel: document.querySelector('#upcomingLabel'),
+  legendSingleLabel: document.querySelector('#legendSingleLabel'),
+  legendDouble: document.querySelector('#legendDouble'),
   calendarTitle: document.querySelector('#calendarTitle'),
   monthViewport: document.querySelector('#monthViewport'),
   monthGrid: document.querySelector('#monthGrid'),
@@ -59,6 +73,7 @@ const elements = {
 };
 
 const today = startOfDay(new Date());
+let activeScaleTab = loadScaleTab();
 let anchorDate = loadAnchorDate();
 let selectedDate = anchorDate || today;
 let visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
@@ -341,9 +356,15 @@ function toggleTheme() {
   applyTheme(activeTheme === 'light' ? 'dark' : 'light', true);
 }
 
+function loadScaleTab() {
+  try { return localStorage.getItem(SCALE_TAB_KEY) === 'supv' ? 'supv' : 'atend'; } catch { return 'atend'; }
+}
+
+function currentStorageKey() { return activeScaleTab === 'supv' ? SUPV_STORAGE_KEY : STORAGE_KEY; }
+
 function loadAnchorDate() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    const saved = JSON.parse(localStorage.getItem(currentStorageKey()) || 'null');
     return fromLocalISO(saved?.anchorDate);
   } catch {
     return null;
@@ -351,7 +372,7 @@ function loadAnchorDate() {
 }
 
 function saveAnchorDate(date) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  localStorage.setItem(currentStorageKey(), JSON.stringify({
     anchorDate: toLocalISO(date),
     savedAt: new Date().toISOString(),
     version: 2
@@ -406,6 +427,10 @@ function getHolidays(year) {
 
 function scheduleTypeFor(date) {
   if (!anchorDate) return null;
+  if (activeScaleTab === 'supv') {
+    // A data-base da SUPV é dia de trabalho: trabalho / folga a cada 48 horas.
+    return Math.abs(diffDays(date, anchorDate)) % 2 === 0 ? 'work' : 'single';
+  }
   const delta = diffDays(date, anchorDate);
   const position = ((delta % CYCLE_DAYS) + CYCLE_DAYS) % CYCLE_DAYS;
   if (SINGLE_OFFSETS.has(position)) return 'single';
@@ -414,7 +439,7 @@ function scheduleTypeFor(date) {
 }
 
 function scheduleLabel(type) {
-  if (type === 'single') return 'Folga unitária';
+  if (type === 'single') return activeScaleTab === 'supv' ? 'Folga' : 'Folga unitária';
   if (type === 'double') return 'Folga dupla';
   if (type === 'work') return 'Dia de trabalho';
   return 'Sem classificação';
@@ -502,7 +527,7 @@ function renderCalendar(direction = 0) {
       cell.append(orbitA, orbitB, collisionFlash, fireLayer, smokeLayer);
 
       const mark = document.createElement('small');
-      mark.textContent = type === 'single' ? 'U' : 'D';
+      mark.textContent = activeScaleTab === 'supv' ? 'F' : (type === 'single' ? 'U' : 'D');
       mark.setAttribute('aria-hidden', 'true');
       cell.appendChild(mark);
     }
@@ -557,6 +582,21 @@ function renderSelectedDate() {
 
 function renderAppState() {
   const hasAnchor = Boolean(anchorDate);
+  const supv = activeScaleTab === 'supv';
+  elements.atendTab.classList.toggle('active', !supv);
+  elements.supvTab.classList.toggle('active', supv);
+  elements.atendTab.setAttribute('aria-selected', String(!supv));
+  elements.supvTab.setAttribute('aria-selected', String(supv));
+  elements.setupTitle.textContent = supv ? 'Defina o primeiro dia de trabalho' : 'Defina a data inicial';
+  elements.setupDescription.innerHTML = supv ? 'Escolha um <strong>dia de trabalho</strong>. A escala alternará automaticamente: um dia de trabalho, um dia de folga.' : 'Toque no botão abaixo. Um calendário será aberto para escolher a primeira <strong>folga unitária</strong>.';
+  elements.setAnchorLabel.textContent = supv ? 'Definir dia de trabalho' : 'Definir folga unitária';
+  elements.dateDialogTitle.textContent = supv ? 'Escolha um dia de trabalho' : 'Escolha a folga unitária';
+  elements.dateDialogDescription.textContent = 'Esta data será usada como base permanente da escala nesta aba e neste aparelho.';
+  elements.dateFieldLabel.textContent = supv ? 'DATA DO DIA DE TRABALHO' : 'DATA DA PRIMEIRA FOLGA';
+  elements.resetDescription.textContent = supv ? 'A data-base da SUPV será apagada, sem alterar a escala ATEND.' : 'A data-base da ATEND será apagada, sem alterar a escala SUPV.';
+  elements.upcomingLabel.textContent = 'PRÓXIMAS FOLGAS';
+  elements.legendSingleLabel.textContent = supv ? 'Folga' : 'Folga unitária';
+  elements.legendDouble.hidden = supv;
   elements.setupPanel.hidden = hasAnchor;
   elements.calendarPanel.hidden = !hasAnchor;
   elements.selectedCard.hidden = !hasAnchor;
@@ -567,12 +607,12 @@ function renderAppState() {
 
   if (!hasAnchor) {
     elements.statusTitle.textContent = 'Nenhuma data definida';
-    elements.statusText.textContent = 'Defina a primeira folga unitária para gerar a escala.';
+    elements.statusText.textContent = (supv ? 'Defina um dia de trabalho para gerar a escala 1 dia sim, 1 dia não.' : 'Defina a primeira folga unitária para gerar a escala.');
     elements.nextDaysList.replaceChildren();
     return;
   }
 
-  elements.statusTitle.textContent = `Base: ${anchorDate.getDate().toString().padStart(2, '0')}/${(anchorDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  elements.statusTitle.textContent = `${supv ? 'SUPV' : 'ATEND'} · Base: ${anchorDate.getDate().toString().padStart(2, '0')}/${(anchorDate.getMonth() + 1).toString().padStart(2, '0')}`;
   elements.statusText.textContent = '';
   renderCalendar();
   renderNextDays();
@@ -617,7 +657,7 @@ function renderNextDays() {
 
     const tag = document.createElement('span');
     tag.className = `next-item-tag ${type}`;
-    tag.textContent = type === 'single' ? 'Unitária' : 'Dupla';
+    tag.textContent = activeScaleTab === 'supv' ? 'Folga' : (type === 'single' ? 'Unitária' : 'Dupla');
 
     row.append(dayNumber, info, tag);
     row.addEventListener('click', () => {
@@ -716,16 +756,16 @@ function setAnchorFromInput(event) {
   saveAnchorDate(anchorDate);
   elements.dateDialog.close();
   renderAppState();
-  showToast('Folga unitária definida e salva.');
+  showToast(activeScaleTab === 'supv' ? 'Dia de trabalho SUPV definido e salvo.' : 'Folga unitária definida e salva.');
   setTimeout(() => elements.calendarPanel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 }
 
 function resetScale() {
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(currentStorageKey());
   anchorDate = null;
   selectedDate = today;
   visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1, 12);
-  showToast('Escala apagada. Escolha uma nova data-base.');
+  showToast(`Escala ${activeScaleTab.toUpperCase()} apagada. Escolha uma nova data-base.`);
   renderAppState();
 }
 
@@ -795,6 +835,19 @@ function registerServiceWorker() {
   }
 }
 
+function switchScaleTab(tab) {
+  if (tab === activeScaleTab) return;
+  activeScaleTab = tab;
+  try { localStorage.setItem(SCALE_TAB_KEY, tab); } catch {}
+  window.dispatchEvent(new Event('civiloff:scale-tab-changed'));
+  anchorDate = loadAnchorDate();
+  selectedDate = anchorDate || today;
+  visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1, 12);
+  renderAppState();
+}
+
+elements.atendTab.addEventListener('click', () => switchScaleTab('atend'));
+elements.supvTab.addEventListener('click', () => switchScaleTab('supv'));
 elements.setAnchorButton.addEventListener('click', openDatePicker);
 elements.cancelDate.addEventListener('click', () => elements.dateDialog.close());
 elements.dateForm.addEventListener('submit', setAnchorFromInput);

@@ -56,3 +56,20 @@ deviceIds
 O caminho antigo `presence/civiloff/onlineUsers` pertence à versão anterior de usuários online. Ele pode ser apagado manualmente no Firebase Console depois de publicar esta versão.
 
 Use o conteúdo de `database.rules.json` nas regras do Realtime Database.
+
+## Escalas ATEND e SUPV (versão de teste)
+
+- **ATEND:** mantém o ciclo anterior de 12 dias, com folga unitária e folga dupla, e preserva a data-base já armazenada.
+- **SUPV:** selecione um **dia de trabalho** como data-base. A partir dele, há alternância contínua de trabalho/folga, sem limite de meses e também para datas anteriores à base.
+- Cada aba mantém sua própria data-base no `localStorage`. O RESET apaga somente a aba selecionada.
+- Para testar localmente, abra um terminal nesta pasta e execute `python -m http.server 8000`; acesse `http://localhost:8000` no navegador. O PWA pode usar arquivos armazenados offline; ao testar uma atualização já instalada, recarregue a página com internet para obter a nova versão.
+
+
+## Atualização segura e contagem por usuário
+
+- O contador mantém o mesmo caminho Firebase `deviceIds/civiloff` e o mesmo ID de dispositivo (`civilOffDeviceId:v2`); cada novo navegador/dispositivo registrado soma **1** ao total, seja na aba ATEND ou SUPV. Navegação e troca de abas **não** somam novamente.
+- A aba usada por último fica no campo `scaleTab` do registro existente. Registros antigos continuam válidos; não é necessário excluir dados nem recriar o banco.
+- As configurações e datas individuais continuam no `localStorage` com as chaves anteriores, incluindo `copomCivilFolgaConfig:v1`, `copomCivilSupvConfig:v1` e `copomCivilScaleTab:v1`.
+- Não desinstale o PWA, apague dados do site nem altere o domínio se desejar preservar configurações dos navegadores existentes.
+- Antes da publicação, exporte um backup JSON do Firebase. **Não substitua as regras atuais do Firebase automaticamente**, caso contenham permissões de outras funcionalidades.
+- O contador é de **dispositivos/navegadores identificados**, não de pessoas autenticadas. Limpar dados locais ou usar outro navegador pode gerar novo registro.

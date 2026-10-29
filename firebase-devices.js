@@ -22,6 +22,7 @@ const firebaseConfig = {
 
 const DEVICE_ID_KEY = 'civilOffDeviceId:v2';
 const LEGACY_USER_ID_KEY = 'civilOffFirebaseUserId:v1';
+const SCALE_TAB_KEY = 'copomCivilScaleTab:v1';
 const DEVICES_ROOT = 'deviceIds/civiloff';
 const LEGACY_PRESENCE_ROOT = 'presence/civiloff/onlineUsers';
 
@@ -67,6 +68,11 @@ function getLegacyUserId() {
   } catch {
     return '';
   }
+}
+
+function selectedScale() {
+  try { return localStorage.getItem(SCALE_TAB_KEY) === 'supv' ? 'supv' : 'atend'; }
+  catch { return 'atend'; }
 }
 
 function countDirectChildren(snapshot) {
@@ -127,25 +133,27 @@ try {
     renderUnavailable();
   });
 
-  runTransaction(currentDeviceRef, (currentData) => {
-    if (currentData && typeof currentData === 'object') {
-      return {
-        ...currentData,
-        deviceKey: deviceId,
-        lastSeenAt: serverTimestamp(),
-        userAgent: navigator.userAgent || 'unknown'
-      };
-    }
-
-    return {
-      deviceKey: deviceId,
-      firstSeenAt: serverTimestamp(),
-      lastSeenAt: serverTimestamp(),
-      userAgent: navigator.userAgent || 'unknown'
-    };
-  }).catch(() => {
-    renderUnavailable();
-  });
+  // Um dispositivo corresponde a apenas um cadastro, independentemente da aba.
+  // Trocar ATEND/SUPV atualiza o mesmo registro e não aumenta o total.
+  let registrationQueue = Promise.resolve();
+  function registerDevice() {
+    registrationQueue = registrationQueue.catch(() => {}).then(() =>
+      runTransaction(currentDeviceRef, (currentData) => {
+        const existing = currentData && typeof currentData === 'object' ? currentData : null;
+        return {
+          ...(existing || {}),
+          deviceKey: deviceId,
+          firstSeenAt: existing?.firstSeenAt ?? serverTimestamp(),
+          lastSeenAt: serverTimestamp(),
+          userAgent: navigator.userAgent || 'unknown',
+          scaleTab: selectedScale()
+        };
+      })
+    );
+    registrationQueue.catch(() => renderUnavailable());
+  }
+  registerDevice();
+  window.addEventListener('civiloff:scale-tab-changed', registerDevice);
 
   // Remove apenas o registro antigo deste mesmo navegador, caso ele tenha sido criado pela versão online.
   // Não apaga o novo contador permanente de dispositivos.
